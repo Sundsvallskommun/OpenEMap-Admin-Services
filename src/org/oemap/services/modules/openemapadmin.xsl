@@ -5,7 +5,7 @@
 	<xsl:include href="openemapadminbasetemplates.xsl"/>	
 
 	<xsl:variable name="scripts">
-	/OpenEMapAdmin/OpenEMapAdmin.js
+	/OpenEMap-Admin/OpenEMapAdmin.js
 	</xsl:variable>	
 		
 </xsl:stylesheet>
