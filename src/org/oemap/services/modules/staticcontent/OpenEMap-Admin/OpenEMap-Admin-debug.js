@@ -1,3 +1,321 @@
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* The mapconfiguration view.
+*/
+
+Ext.define('AdmClient.view.MapConfiguration', {
+	extend :  Ext.panel.Panel ,
+	                                  
+	alias : 'widget.mapConfiguration',
+	layout : 'border',
+	border : false,
+
+	initComponent : function() {
+		this.items = [ {
+			border : false,
+			bodyPadding : 10,
+			region : 'north',
+			tbar : [ {
+				xtype : 'combo',
+				itemId : 'configurations',
+				displayField: 'name',
+				enableKeyEvents : true
+			}, {
+				text : 'Spara',
+				itemId : 'saveConfiguration'
+			} ]
+		}, {
+			xtype : 'tabpanel',
+			region : 'center',
+			items : [ {
+				title : 'Map extent',
+				layout : 'fit',
+				border : false,
+				itemId : 'mapPanel',
+				disabled : true,
+				tbar : [ {
+					xtype : 'button',
+					text : 'Pan',
+					itemId : 'pan',
+					icon : 'resources/images/arrow-move.png',
+					enableToggle : true,
+					pressed : true
+
+				}, {
+					xtype : 'button',
+					itemId : 'markExtent',
+					text : 'Mark extent',
+					icon : 'resources/images/figur-R.png',
+					iconCls : 'extent',
+					enableToggle : true
+				},('->'),{
+					xtype : 'textfield',
+					disabled : true,
+					itemId : 'configId'
+				},{
+					xtype: 'checkbox',
+					fieldLabel : 'Autoclear draw layer',
+					itemId : 'autoClearDrawLayer'
+						},{
+					xtype : 'textfield',
+					itemId : 'attribution',
+					enableKeyEvents : true,
+					fieldLabel : 'Attribution'
+				} ],
+				margin : 12
+			}, {
+				title : 'Tools',
+				layout : 'border',
+				border : false,
+				itemId : 'tools',
+				disabled : true,
+				margin : 12,
+				items : [ {
+					xtype : 'toolsGrid',
+					itemId : 'toolsGrid',
+					region : 'north'
+				}, {
+					xtype : 'panel',
+					region : 'center',
+					itemId : 'toolGeneral'
+				} ]
+			}, {
+				title : 'Search',
+				xtype : 'searchPanel',
+				itemId : 'searchGridConfig',
+				layout : 'fit',
+				disabled : true
+			}, {
+				title : 'Layers',
+				xtype : 'layerPanel',
+				itemId: 'layerTab',
+				disabled : true
+			}, {
+				title: 'Preview',
+				itemId: 'previewMap',
+				layout: 'fit',
+				disabled : true,
+				hidden: true
+			}]
+		}, {
+			title : 'Config',
+			itemId : 'configurationPreviewPanel',
+			layout : 'fit',
+			disabled : true,
+			collapsible : true,
+			collapsed : true,
+			height : 600,
+			region : 'south',
+			items : [{xtype : 'textarea', itemId : 'configurationTextfield'}],
+			bbar : ['->', {
+				xtype : 'button',
+				text : 'Export'
+			}]
+		} ];
+
+		this.callParent(arguments);
+
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* The main page that sets up the UI.
+*/
+
+Ext.define('AdmClient.view.Main', {
+	extend :  Ext.panel.Panel ,
+	                                              
+	alias : 'widget.main',
+
+	title : 'RIGES Administration',
+	layout : 'border',
+	border : false,
+	header : false,
+	bodyPadding : 3,
+	renderTo: 'contentitem',
+	region : 'center',
+
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'tabpanel',
+			tabPosition : 'left',
+//			height : 800,
+			region : 'center',
+			items : [{
+				layout : 'border',
+				margin : 8,
+				title : 'Map configuration',
+				items : [ {
+					xtype : 'mapConfiguration',
+					region : 'center'
+				} ]
+			}]
+		}, 
+		{
+			xtype : 'mainToolbar',
+			region : 'north',
+			style : {
+				marginBottom : '20px'
+			}
+		} 
+		],
+		this.callParent(arguments);
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle main view.
+*/
+
+Ext.define('AdmClient.controller.Main', {
+    extend:  Ext.app.Controller ,
+                                      
+    views: ['Main', 'MapConfiguration'],
+    
+    refs: [{
+      ref: 'form',
+        selector: 'form'
+    },{
+        ref: 'currentZoom',
+        selector: '#currentZoom'
+    },{
+    	ref : 'center',
+    	selector : '#center'
+    }
+    ],
+    
+    init: function() {
+        this.control({
+            '#mapPanel' : {
+            	aftermapmove : this.onMapMove
+            },
+            
+            '#currentZoom' : {
+            	keyup : this.onZoomKeyUp
+            }
+        });
+    },
+    
+    onZoomKeyUp : function(evt, e){
+    	var self = this;
+    	var zoom = parseInt(evt.value, 10);
+    	if ( (zoom > 0)  && (zoom < 20) && (e.keyCode === e.ENTER)){
+    		self.map.setCenter(self.map.center, zoom);
+    	}
+    },
+    
+    setZoom : function(zoom){
+    	
+    }
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle main toolbar.
+*/
+
+
+Ext.define('AdmClient.controller.MainToolbar', {
+	extend :  Ext.app.Controller ,
+	init : function() {
+		this.control({
+			'#about' : {
+				click : this.aboutButtonClick
+			}
+		});
+	},
+	
+	aboutButtonClick : function(btn, evt) {
+		new AdmClient.view.about.About().show();
+	}
+});
+
 Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 	extend :  Ext.window.Window ,
 	alias : 'widget.layerDetails',
@@ -542,6 +860,1671 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
+* A controller to handle main MapConfiguration view.
+*/
+
+Ext.define('AdmClient.controller.MapConfiguration', {
+	extend :  Ext.app.Controller ,
+	                             
+	                                             
+	                                                               
+	refs : [{
+		ref	: 'configurations',
+		selector : '#configurations'
+	},{
+		ref : 'attribution',
+		selector : '#attribution'
+	},{
+		ref : 'configurationTextfield',
+		selector : '#configurationTextfield'
+	},{
+		ref : 'toolsTab',
+		selector : '#tools'
+	},{
+		ref : 'mapPanel',
+		selector : '#mapPanel'
+	},{
+		ref : 'searchGrid',
+		selector : '#searchGridConfig'
+	},{
+		ref : 'layerTab',
+		selector : '#layerTab'
+	},{
+		ref : 'previewMap',
+		selector : '#previewMap'
+	},{
+		ref : 'configurationPreview',
+		selector: '#configurationPreviewPanel'
+	}, {
+		ref : 'autoClearDrawLayer',
+		selector : '#autoClearDrawLayer'
+	},{
+		ref : 'configurationPreviewPanel',
+		selector : '#configurationPreviewPanel'
+	}
+	],
+	
+	init : function() {
+		this.control({
+			'#pan' : {
+				click : this.panMap
+			},
+			'#markExtent' : {
+				click : this.markExtent
+			},
+			'#mapPanel' : {
+				render : this.mapPanelRender
+			},
+			'#saveConfiguration' : {
+				click : this.saveConfiguration
+			},
+			'#configurations' : {
+				keyup : this.setConfigurationName,
+				render : this.renderConfiguration,
+				select : this.selectConfiguration
+			},
+			'#configurationPreviewPanel' : {
+				hide : this.configurationPreviewPanelHide,
+				expand : this.configurationPreviewPanelShow,
+				beforeshow : this.configurationPreviewPanelBeforeShow
+			},
+			'#attribution' : {
+				keyup : this.setAttribution
+			},
+			'#autoClearDrawLayer' : {
+				change : this.autoClearDrawLayerChanged
+			}
+		});
+
+		this.application.on({
+			configuration_change: this.changeConfiguration,
+			scope: this
+		});
+	},
+
+	panMap : function(btn) {
+		var markExtentButton = Ext.ComponentQuery.query('#markExtent')[0];
+		markExtentButton.toggle();
+
+		var drawRectangleTool = this.mapClient.map.controls.filter(function(t) {
+			return t instanceof OpenLayers.Control.DrawFeature;
+		})[0];
+		
+		if (drawRectangleTool && drawRectangleTool.active) {
+			drawRectangleTool.deactivate();
+		}
+	},
+
+	markExtent : function(btn) {
+		var panButton = Ext.ComponentQuery.query('#pan')[0];
+		panButton.toggle();
+
+		var drawRectangleTool = this.mapClient.map.controls.filter(function(t) {
+			return t instanceof OpenLayers.Control.DrawFeature;
+		})[0];
+		
+		if (drawRectangleTool) {
+			drawRectangleTool.activate();
+		}
+	},
+	
+	mapClient : null,
+	mapPanelRender : function(panel) {
+		this.mapClient = Ext.create('OpenEMap.Client');
+		
+		Ext.Ajax.request({
+			scope : this,
+			url : 'admin.json',
+			success : function(response) {
+				var config = Ext.decode(response.responseText);
+				
+				AdmClient.app.config = Ext.applyIf(AdmClient.app.config, config);
+				var gui = {
+					map : {},
+					zoomTools : {}
+				};
+				if (this.mapClient){
+					this.mapClient.destroy();
+				}
+				this.mapClient.configure(Ext.clone(config), {
+					gui : gui
+				});
+
+				panel.add(this.mapClient.gui.container);
+				panel.doLayout();
+
+				var drawRectangelTool = new OpenLayers.Control.DrawFeature(
+						this.mapClient.mapPanel.drawLayer,
+						OpenLayers.Handler.RegularPolygon, {
+							handlerOptions : {
+								sides : 4,
+								irregular : true
+							}
+						});
+				this.mapClient.map.addControl(drawRectangelTool);
+				
+				this.mapClient.drawLayer.events.register('featureadded', null, function(){
+					AdmClient.app.config.extent = arguments[0].feature.geometry.getBounds().toArray();
+				});
+			}
+		});
+	},
+	
+	saveConfiguration : function(){
+		var self = this;
+		if (AdmClient.app.config.name === 'Default'){
+			Ext.MessageBox.alert('"Default" is an invalid configuration name.', 'You are trying to write to a write protected template. Choose another template name');
+			return;
+		}
+		// Update config.layers
+        var s = Ext.getStore('configurationTreeStore');
+        AdmClient.app.config.layers = s.getLayerConfiguration();
+		
+		AdmClient.app.config.isPublic = true;
+		var url = appPath + '/adminconfigs/config';
+		url += AdmClient.app.config.configId === undefined ? '' : ('/' + AdmClient.app.config.configId);
+		var method = AdmClient.app.config.configId === undefined ? 'POST' : 'PUT';
+		Ext.Ajax.request({
+			url : url,
+			method : method,
+			jsonData : AdmClient.app.config,
+			success : function(evt){
+				Ext.MessageBox.alert('Save', 'Configuration saved');
+				self.renderConfiguration();
+			},
+			failure : function(evt){
+				Ext.MessageBox.alert('Error', 'Error saving: ' + evt.message);
+			}
+			
+		});
+	},
+	
+	setConfigurationName : function(combo, e, eOpts){
+		AdmClient.app.config.name = combo.getValue();
+		AdmClient.app.config.configId = undefined;
+		this.getConfigId().setValue(AdmClient.app.config.configId || '');
+		this.setConfigText();
+	},
+	
+	
+	renderConfiguration : function(){
+		var self = this;
+		Ext.Ajax.request({
+			url : appPath + '/configs',
+			method : 'GET',
+			success : function(evt){
+				var configs = JSON.parse(evt.responseText);
+				var configurations = Ext.create('Ext.data.Store',{
+					fields : ['name', 'configId'],
+					data :  configs
+				});
+				var combo = self.getConfigurations();
+				combo.store = configurations;
+				combo.queryMode = 'local';
+				combo.displayField = 'name';
+				combo.valueField = 'configId';
+			},
+			error : function(evt){
+				Ext.MessageBox.alert('Erro', 'Error getting configurations: ' + evt.message);
+			}
+		});
+	},
+
+	selectConfiguration : function(combo, records){
+		if(records.length > 0) {
+			this.loadConfiguration(	records[0].get('configId'));
+		}
+	},
+
+	changeConfiguration: function(config) {
+		AdmClient.app.config = Ext.apply(AdmClient.app.config,config);
+		this.getAttribution().setValue(AdmClient.app.config.attribution);
+		this.getToolsTab().setDisabled(false);
+		this.getMapPanel().setDisabled(false);
+		this.getSearchGrid().setDisabled(false);
+		this.getPreviewMap().setDisabled(false);
+		if (this.getPreviewMap().isVisible()) {
+    		AdmClient.app.getPreviewMapController().previewRender(this.getPreviewMap());
+		}
+		this.getLayerTab().setDisabled(false);
+		this.getConfigurationPreview().setDisabled(false);
+		this.getAutoClearDrawLayer().setValue(AdmClient.app.config.autoClearDrawLayer || false); 
+		
+		if (AdmClient.app.config.extent){
+			var bounds = OpenLayers.Bounds.fromArray(AdmClient.app.config.extent);
+			this.mapClient.map.zoomToExtent(bounds);
+		}
+		var configTitle = 'Config - ' + AdmClient.app.config.name + ' (' + AdmClient.app.config.configId.toString() + ')';
+		//this.getConfigurationPreviewPanel().setTitle(configTitle);
+	},
+
+	loadConfiguration: function(id) {
+		Ext.Ajax.request({
+			url : appPath + '/configs/config/' + id,
+			method : 'GET',
+			success : function(evt){
+				var config = JSON.parse(evt.responseText);
+				this.application.fireEvent('configuration_change', config);
+			},
+			error : function(evt){
+				Ext.MessageBox.alert('Erro', 'Error getting configuration: ' + id + ', ' + evt.message);
+			},
+			scope: this
+		});
+	},
+	
+
+	
+	configurationPreviewPanelShow : function(panel, eOpts){
+		 this.setConfigText();
+	},
+	
+	setConfigText : function(){
+		var conf = JSON.stringify(AdmClient.app.config, null, ' ');
+		var configTextArea = this.getConfigurationTextfield();
+		configTextArea.setValue(conf);
+	},
+	
+	setAttribution : function(){
+		AdmClient.app.config.attribution = this.getAttribution().getValue();
+		this.setConfigText();
+	},
+	
+	autoClearDrawLayerChanged : function(box, newValue, oldValue, eOpts){
+		AdmClient.app.config.autoClearDrawLayer = newValue;
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle servers view.
+*/
+
+Ext.define('AdmClient.controller.Servers', {
+	extend :  Ext.app.Controller ,
+	init : function() {
+		this.control({
+
+			'#addSettingsRow' : {
+				click : this.settingsGridAdd
+			},
+			'#saveSettings' : {
+				click : this.save
+			}
+		});
+	},
+
+	serversGridEdit : function(editor, e) {
+	},
+
+	searchGridEdit : function(editor, e) {
+	},
+
+	settingsGridAdd : function(btn, e) {
+		var query = 'button[id=' + btn.id + '] ^ grid'; // something like ('button[id=button-1049] ^ grid')
+		var grids = Ext.ComponentQuery.query(query);
+		if (grids && grids instanceof Array) {
+			var grid = grids[0];
+			grid.getStore().add({});
+		}
+	},
+	
+	save: function(btn, e){
+		var grid = Ext.ComponentQuery.query('button[id=' + btn.getId() +'] ^ grid')[0];
+		if (grid){
+			var store = grid.getStore();
+			store.sync({callback : function(){
+				grid.getStore().load();
+			}});
+			grid.getStore().commitChanges();
+			
+		}
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Identify configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.Identify', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.identify',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'Identify'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Identify configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.Popup', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.popup',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'Popup'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Draw geometry configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.DrawGeometry', {
+	extend :  Ext.panel.Panel ,
+
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'draw geometry'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Print configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.Print', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.print',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'Print'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Delete geometry configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.DeleteGeometry', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.deletegeometry',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'DeleteGeometry'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Modify geometry configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.ModifyGeometry', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.modifygeometry',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'ModifyGeometry'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Measure line configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.MeasureLine', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.measureline',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'MeasureLine'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Draw object configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.DrawObject', {
+	extend :  Ext.form.Panel ,
+	alias : 'widget.drawobject',
+	
+	type: 'drawobject',
+	
+	typeLabel: 'Type',
+    widthLabel: 'Width',
+    lengthLabel: 'Length',
+    m1Label: 'M1',
+    m2Label: 'M2',
+    angleLabel: 'Angle',
+    
+	initComponent : function() {
+	    
+	    var formItems = [{
+            xtype: 'numberfield',
+            fieldLabel: this.widthLabel,
+            itemId: 'w',
+            minValue: 0
+        },{
+            xtype: 'numberfield',
+            fieldLabel: this.lengthLabel,
+            itemId: 'l',
+            minValue: 0
+        },{
+            xtype: 'numberfield',
+            fieldLabel: this.m1Label,
+            itemId: 'm1',
+            minValue: 0
+        },{
+            xtype: 'numberfield',
+            fieldLabel: this.m2Label,
+            itemId: 'm2',
+            minValue: 0
+        },{
+            xtype: 'numberfield',
+            itemId: 'angle',
+            fieldLabel: this.angleLabel,
+            value: 0
+        }];
+	    
+		this.items = [ {
+			xtype : 'checkboxfield',
+			boxLabel : 'User customizable'
+		}, {
+		    width: 230,
+		    xtype : 'radiogroup',
+            vertical : true,
+            fieldLabel: 'Type',
+            itemId: 'type',
+		    items : [ {
+                boxLabel : '<div class="objectconfig-radio-r"></div>',
+                name : 'rb',
+                inputValue : 'R',
+                checked : true
+            }, {
+                boxLabel : '<div class="objectconfig-radio-l"></div>',
+                name : 'rb',
+                enabled: false,
+                inputValue : 'L'
+            }, {
+                boxLabel : '<div class="objectconfig-radio-d"></div>',
+                name : 'rb',
+                enabled: false,
+                inputValue : 'D'
+            }, {
+                boxLabel : '<div class="objectconfig-radio-o"></div>',
+                name : 'rb',
+                enabled: false,
+                inputValue : 'O'
+            } ]
+		} ];
+		
+		this.items = this.items.concat(formItems);
+		
+		this.callParent(arguments);
+		
+		this.getConfig();
+	},
+	
+	setConfig: function() {
+	    var toolCfg = this.getToolConfig();
+	},
+	
+	getConfig: function() {
+	    var toolCfg = this.getToolConfig();
+	    var objectConfig = toolCfg.objectConfig;
+	    
+	    if (objectConfig) {
+	        objectConfig.type = this.down('#type').getValue();
+	    }
+	},
+	
+	getToolConfig: function() {
+	    return AdmClient.app.config.tools.filter(function(tool) {
+	        return (tool.type = this.type);
+	    }, this);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Full extent configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.FullExtent', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.fullextent',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'FullExtent'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * General tool configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.General', {
+	extend :  Ext.tab.Panel ,
+	                                                                     
+	style : {
+		marginTop : '20px'
+	},
+
+	toolName : null,
+
+	constructor : function() {
+		this.tool = arguments[0] || '';
+		this.toolName = arguments[1] || '';
+		this.callParent(arguments);
+	},
+
+	initComponent : function() {
+		this.items = [ {
+
+			title : 'Settings for tool ' + this.toolName,
+
+			items : [ {
+				title : 'General settings',
+				xtype : 'fieldset',
+				items : [ {
+					xtype : 'textfield',
+					fieldLabel : 'Tooltip'
+				}, {
+					xtype : 'textfield',
+					fieldLabel : 'Min scale',
+					maskRe : /[0-9]/
+				} ]
+			}, {
+				xtype : 'fieldset',
+				title : 'Details settings',
+				itemId : 'details'
+			} ]
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Measure area configuration details
+ */
+Ext.define('AdmClient.view.mapconfiguration.tools.details.MeasureArea', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.measurearea',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'button',
+			text : 'MeasureArea'
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle main tools grid.
+*/
+
+
+Ext.define('AdmClient.controller.ToolsGrid', {
+	extend :  Ext.app.Controller ,
+	                                                                                                   
+	refs : [{
+		ref	: 'configurations',
+		selector : '#configurations'
+	},{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	},{
+		ref : 'toolGeneral',
+		selector : '#toolGeneral'
+	}],
+	init : function() {
+		this.control({
+
+			'#toolsGrid' : {
+				render : this.gridRender
+			},
+			'#details' : {
+				render : this.detailsRender
+			}
+		});
+
+		this.application.on({
+            configuration_change: this.markTools,
+            scope: this
+        });
+	},
+
+	views : [],
+	
+	gridRender : function(panel, opts) {
+		this.markTools();
+	},
+	
+	markTools : function(){
+		var panel = this.getToolsGrid();
+		for (var i = 0; i < panel.store.data.items.length; i++){
+			panel.store.data.items[i].data.selected = false;
+			panel.store.data.items[i].save();
+		}
+		
+		
+		// IMPORTANT
+		// this needs to rewrite
+		for (i = 0; i < panel.store.data.items.length; i++){
+			panel.store.data.items[i].data.selected = false;
+			var toolName = panel.store.data.items[i];
+			for (var j = 0; j < AdmClient.app.config.tools.length; j++){
+				var configTool = AdmClient.app.config.tools[j];
+				if (configTool.constructor === String){
+					if (configTool === toolName.data.toolName){
+						toolName.data.selected = true;
+						toolName.save();
+					}
+				} else if (configTool.type === toolName.data.toolName){
+					if (configTool.geometry && configTool.geometry === toolName.data.tool){
+						toolName.data.selected = true;
+					} else if(configTool.geometry && configTool.geometry !== toolName.data.tool){
+						continue;
+					} 
+					else if(configTool.type && toolName.data.toolName){
+						toolName.data.selected = true;
+					}
+					toolName.save();
+				}
+			}
+		}
+		panel.updateLayout();
+	},
+	
+	toolsHasEmptyObject : function(){
+		for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+			if (Object.keys(AdmClient.app.config.tools[i]).length > 0){
+				return true;
+			}
+		}
+		return false;
+	},
+	
+	// function show details about a tool
+	detailsRender : function() {
+		var detailsPanel = arguments[0];
+		detailsPanel.removeAll(false);
+		var toolName = this.getToolsGrid().getSelectionModel().selected.items[0].data.toolName;
+		var tool = 'AdmClient.view.mapconfiguration.tools.details.' + toolName;
+		var toolPanel = Ext.create(tool);
+		detailsPanel.add(toolPanel);
+	}
+	
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A model store for det grouped Layers. 
+*/
+
+Ext.define('AdmClient.store.Layers', {
+    extend:  Ext.data.Store ,
+    model: 'AdmClient.model.Layer',
+                                         
+    proxy: {
+        type: 'rest',
+        url: '/openemapadmin/layers'
+    },
+    autoLoad: true
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Configured layers
+ */
+Ext.define('AdmClient.view.settings.LayersConfigured', {
+    extend :  Ext.grid.Panel ,
+                                            
+    alias : 'widget.layersconfigured',
+    title : 'Configured layers',
+    store : 'Layers',
+    itemId : 'layers',
+    autoScroll : true,
+    minHeight : 200,
+    hideHeaders : true,
+    selType : 'cellmodel',
+    viewConfig: {
+        stripeRows: false
+    },
+    initComponent : function() {
+
+        
+        this.columns = [ {
+            dataIndex : "name",
+            sortable : false,
+            flex : 1
+        }, {
+            xtype:'actioncolumn',
+            width:25,
+            itemId: 'settings',
+            items: [{
+                icon: 'resources/images/gear.png',
+                tooltip: 'Settings'
+            }]
+        }, {
+            xtype:'actioncolumn',
+            width:25,
+            itemId: 'delete',
+            items: [{
+                icon: 'resources/images/cross.png',
+                tooltip: 'Delete'
+            }]
+        } ];
+
+        this.callParent(arguments);
+    }
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * WMS Layers
+ */
+Ext.define('AdmClient.view.settings.LayersWMS', {
+    extend :  Ext.panel.Panel ,
+    alias : 'widget.layerswms',
+    layout : {
+        type : 'vbox',
+        align : 'stretch'
+    },
+    title : 'WMS layers',
+    initComponent : function() {
+        var wms = Ext.create("GeoExt.data.WmsCapabilitiesLayerStore", {
+            url: '/riges/geoserver/wms?request=GetCapabilities&version=1.1.0',
+            //url : "capabilities.xml",
+            autoLoad : true
+        });
+        
+        this.items = [ {
+            xtype : 'combobox',
+            fieldLabel : 'WMS server'
+        }, {
+            xtype : 'grid',
+            store : wms,
+            itemId : 'wmslayers',
+            flex : 1,
+            hideHeaders : true,
+            autoScroll : true,
+            columns : [ {
+                dataIndex : "name",
+                sortable : true,
+                flex : 1
+            } ]
+        } ];
+
+        this.callParent(arguments);
+    }
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Layers
+ */
+Ext.define('AdmClient.view.settings.Layers', {
+    extend :  Ext.panel.Panel ,
+                                                         
+                                     
+                                                       
+                                                  
+    alias : 'widget.layers',
+    title : 'Layers',
+    layout : {
+        type : 'hbox',
+        align : 'stretch'
+    },
+    initComponent : function() {
+
+        this.items = [ {
+            xtype : 'layerswms',
+            //padding : '0 5 0 0',
+            padding : 10,
+            flex : 1
+        }, {
+            layout : {
+                type : 'vbox',
+                align : 'center',
+                pack : 'center'
+            },
+            items : {
+                xtype : 'button',
+                text : 'Add ->',
+                itemId : 'add'
+            }
+        }, {
+            xtype : 'layersconfigured',
+            //padding : '0 0 0 5',
+            padding : 10,
+            flex : 1
+        } ];
+        
+        this.callParent(arguments);
+    }
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Layer settings
+ */
+Ext.define('AdmClient.view.settings.LayerSettings', {
+    extend :  Ext.form.Panel ,
+    requires : [],
+    alias : 'widget.layersettings',
+    defaultType: 'textfield',
+    initComponent : function() {
+
+        this.items = [ {
+            fieldLabel : 'Name',
+            name : 'name'
+        } ];
+
+        this.callParent(arguments);
+    }
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle layer view.
+*/
+
+Ext.define('AdmClient.controller.Layers', {
+    extend :  Ext.app.Controller ,
+                                                 
+                                                         
+    refs: [{
+        ref: 'layers',
+        selector: '#layers'
+    },{
+        ref: 'wmslayers',
+        selector: '#wmslayers'
+    }],
+    views: ['settings.Layers'],
+    stores: ['Layers'],
+    
+    init : function() {
+        this.control({
+            '#add': {
+                click: this.onAddClick
+            },
+            '#layers': {
+                edit: this.onEdit
+            },
+            '#save': {
+                click: this.onSaveClick
+            },
+            '#settings': {
+                click: this.onSettingsClick
+            },
+            '#delete': {
+                click: this.onDeleteClick
+            }
+        });
+    },
+
+    onSaveClick: function() {
+        var layers = this.getLayersStore();
+        layers.sync();
+    },
+    onAddClick: function() {
+        var layers = this.getLayersStore();
+        var wmslayers = this.getWmslayers();
+        var selection = wmslayers.getSelectionModel().getSelection();
+        
+        if (selection.length !== 1) return;
+        
+        var wmslayer = selection[0];
+        
+        var layer = Ext.create('AdmClient.model.Layer', {
+            name: wmslayer.get('name'),
+            isGroupLayer : null,
+            wms: {
+                params: {
+                    layers: wmslayer.get('name')
+                }
+            }
+        });
+        
+        layers.add(layer);
+        
+        layer.save();
+    },
+    onEdit: function(editor, e) {
+        e.record.save();
+    },
+    onSettingsClick: function(gridview, rl, rowIndex, colIndex, e, record) {
+        var layerSettings = Ext.create('AdmClient.view.settings.LayerSettings');
+        
+        var w = Ext.create('Ext.Window', {
+            height: 200,
+            width: 300,
+            padding: 10,
+            title: 'Layer settings',
+            layout: 'fit',
+            modal: true,
+            items: layerSettings,
+            buttons: [{ text: 'Save'}]
+        });
+        
+        w.show();
+                
+        layerSettings.getForm().loadRecord(record);
+    },
+    onDeleteClick: function(gridview, rl, rowIndex, colIndex, e, record) {
+        record.destroy();
+    }
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Search panel
+ *
+ *{@img search.png}
+ *
+ * In this view the administrator simple checks the municipalies the configuration 
+ * should search inside. 
+ * 
+ * The view uses an Arraystore to populate lists.
+ */
+Ext.define('AdmClient.view.mapconfiguration.search.SearchPanel', {
+	extend :  Ext.grid.Panel ,
+	alias : 'widget.searchPanel',
+
+	initComponent : function() {
+		
+		Ext.applyIf(this, {
+
+			columns : [ {
+				text : 'Municipality',
+				dataIndex : 'Municipality',
+				width : 200
+			}, {
+				xtype : 'checkcolumn',
+				dataIndex : 'selected'
+			} ]
+		});
+
+		this.store = new AdmClient.store.Municipalities();
+		this.callParent(arguments);
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle main search view.
+*/
+
+
+Ext.define('AdmClient.controller.Search', {
+	extend :  Ext.app.Controller ,
+	                                                                                                      
+	refs : [{
+			ref	: 'configurations',
+			selector : '#configurations'
+		},{
+			ref : 'searchGrid',
+			selector : '#searchGridConfig'
+	}],
+	
+	init : function() {
+		this.control({
+			'#searchGridConfig' :{
+				render : this.markGrid
+
+			},
+			'#searchGridConfig checkcolumn' : {
+				checkchange : this.municipalityChanged
+			}
+		});
+
+		this.application.on({
+            configuration_change: this.configurationChanged,
+            scope: this
+        });
+	},
+
+	markGrid : function(){
+
+		var panel = this.getSearchGrid();
+		for (var i = 0; i < panel.store.data.items.length; i++){
+			panel.store.data.items[i].data.selected = false;
+			panel.store.data.items[i].save();
+		}
+
+		for (i = 0; i < panel.store.data.items.length; i++){
+			panel.store.data.items[i].data.selected = false;
+			var municipality = panel.store.data.items[i];
+			if (AdmClient.app.config.search){
+				for (var j = 0; j < AdmClient.app.config.search.searchAddresses.options.municipalities.length; j++){
+					var searchMunicipality = AdmClient.app.config.search.searchAddresses.options.municipalities[j];
+					if (searchMunicipality.constructor === String){
+						if (searchMunicipality === municipality.data.Municipality){
+							municipality.data.selected = true;
+							municipality.save();
+						}
+					}
+				}
+			}
+		}
+		panel.updateLayout();
+
+	},
+	
+	configurationChanged : function(){
+		this.markGrid();
+	},
+	
+	municipalityChanged : function(chkBox, rowIndex, checked, eOpts){
+
+		var store = this.getSearchGrid().getStore();
+		store.sync();
+		
+		AdmClient.app.config.search = AdmClient.app.config.search || {};
+		AdmClient.app.config.search.searchEstates = {};
+		AdmClient.app.config.search.searchEstates.options = {};
+		AdmClient.app.config.search.searchEstates.options.municipalities = [];
+
+		AdmClient.app.config.search.searchAddresses = {};
+		AdmClient.app.config.search.searchAddresses.options = {};
+		AdmClient.app.config.search.searchAddresses.options.municipalities = [];
+		
+		AdmClient.app.config.search.searchPlacenames = {};
+		AdmClient.app.config.search.searchPlacenames.options = {};
+		AdmClient.app.config.search.searchPlacenames.options.municipalities = [];
+
+		
+		var municipalities = store.data.items.forEach(function(m){
+			if (m.data.selected){
+				AdmClient.app.config.search.searchEstates.options.municipalities.push(m.data.Municipality);
+				AdmClient.app.config.search.searchAddresses.options.municipalities.push(m.data.Municipality);
+				AdmClient.app.config.search.searchPlacenames.options.municipalities.push(m.data.municipalityCode);
+			}
+		});
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Preview map
+ */
+Ext.define('AdmClient.view.mapconfiguration.map.PreviewMap', {
+	extend :  Ext.panel.Panel ,
+	                                                                    
+	alias : 'widget.previewMap',
+
+	initComponent : function() {
+		this.items = [ {
+			border : false,
+			itemId : 'previewMapPanel',
+			margin : 12
+		} ];
+		this.callParent(arguments);
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle preview map - obselete
+*/
+
+
+Ext.define('AdmClient.controller.PreviewMap', {
+	extend :  Ext.app.Controller ,
+	                                                               
+
+	init : function() {
+		this.control({
+			'#previewMap' : {
+				show : this.previewRender
+			}
+		});
+	},
+
+	previewRender : function(panel) {
+		
+		
+		if (this.mapPanel){
+			this.mapPanel.removeAll();
+			delete this.mapPanel;
+			panel.doLayout();
+		}
+		
+		this.mapPanel = panel;
+		
+		var mapClient = Ext.create('OpenEMap.Client');
+
+		var gui = {
+				map : {},
+//    			toolbar: {}, // at the moment this don't work
+    			zoomTools: {},
+    			layers: {},
+    			baseLayers: {},
+    			objectconfig : {}
+		};
+		
+		mapClient.destroy();
+		var config = Ext.clone(AdmClient.app.config);
+		
+		mapClient.configure(config, {
+			gui : gui
+		});
+
+		panel.add(mapClient.gui.container);
+		panel.doLayout();
+	}
+	
+	
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
 * A model store for det grouped layers. 
 */
 
@@ -586,6 +2569,7 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
     },
 
 	onMove: function(store, oldParent, newParent, index, eOpts) {
+		console.log('onMove');
 		console.log(oldParent);
 	},
     /**
@@ -640,10 +2624,11 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
     			}
     	    	node.set('isGroupLayer', false);
     	    	node.set('clickable', false);
-    	    	this.getWFSSettings(newNode);
+    	    	this.getWFSSettings(node);
         	}
 //        } else if (node.$className === 'AdmClient.model.Layer') {
-//        	console.log(node);
+			console.log('onInsertAndAppend');
+        	console.log(node);
         }
     },
     
@@ -707,7 +2692,7 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
         	return false;
         }
     	var layerPieces = stripName(node.data.wms.params.layers || node.data.wms.params.LAYERS);
-        var wfsUrl = 'adminproxy?url=' + wfsServer + '?service=wfs&request=DescribeFeatureType&version=1.0.0&typeName=' + (node.data.wms.params.layers || node.data.wms.params.LAYERS);
+        var wfsUrl = proxyUrl + wfsServer + '?service=wfs&request=DescribeFeatureType&version=1.0.0&typeName=' + (node.data.wms.params.layers || node.data.wms.params.LAYERS);
 	    var localWfsStore = Ext.create('GeoExt.data.AttributeStore');
 	    localWfsStore.setUrl(wfsUrl);
 	    localWfsStore.load({
@@ -744,7 +2729,7 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
 					var extent = new OpenLayers.Bounds.fromArray(boundary);
 					var layerName = wms.params.LAYERS || wms.params.layers; 
 
-					var requestUrl = 'adminproxy?url=' + wmsServer + '?' + 'request=GetFeatureInfo&service=WMS&version=1.1.1&layers=' + layerName + '&styles=&srs=' + srsName + '&bbox=' + extent.toString() + 
+					var requestUrl = proxyUrl + wmsServer + '?' + 'request=GetFeatureInfo&service=WMS&version=1.1.1&layers=' + layerName + '&styles=&srs=' + srsName + '&bbox=' + extent.toString() + 
 						'&width=1&height=1&query_layers=' + layerName + '&info_format=application/vnd.ogc.gml&feature_count=1&x=0&y=0';
 					Ext.Ajax.request({
 						scope: this,
@@ -1240,2032 +3225,10 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
-* A controller to handle layer details view.
+* A controller to handle tooldetails for draw point tool.
 */
 
-Ext.define('AdmClient.controller.LayerDetails', {
-	extend:  Ext.app.Controller ,
-	                                                                   
-	refs : [{
-		ref : 'saveLayerDetail',
-		selector : '#saveLayerDetail'
-	},{
-		ref: 'layerDetailsGrid',
-		selector: '#layerDetailsGrid'
-	},{
-		ref: 'layerDetails',
-		selector: 'layerDetails'
-	}],
-
-	init : function() {
-		this.control({
-			'#saveLayerDetail' : {
-				click : this.save
-			}
-		});
-	},
-
-	save : function(btn, e, eOpts){
-		var store = this.getLayerDetailsGrid().getStore();
-		var layer = this.getLayerDetails().layer;
-		layer.metadata = {};
-		store.data.items.forEach(function(c){
-			if (c.data.visible || c.data.alias){
-				if (c.data.alias === "") return;
-				if (!layer.metadata.attributes){
-					layer.metadata.attributes = {};
-				}
-				layer.metadata.attributes[c.data.name] = {alias : c.data.alias};
-			}
-		});
-
-		if (Object.keys(layer.metadata).length === 0){
-			delete layer.metadata;
-		}
-
-		store = this.getLayerDetails().panelGrid.store;
-		AdmClient.app.config.layers = store.treeStore.getLayerConfiguration();
-
-		this.getLayerDetails().close();
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A model store for det grouped Layers. 
-*/
-
-Ext.define('AdmClient.store.Layers', {
-    extend:  Ext.data.Store ,
-    model: 'AdmClient.model.Layer',
-                                         
-    proxy: {
-        type: 'rest',
-        url: '/openemapadmin/layers'
-    },
-    autoLoad: true
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Configured layers
- */
-Ext.define('AdmClient.view.settings.LayersConfigured', {
-    extend :  Ext.grid.Panel ,
-                                            
-    alias : 'widget.layersconfigured',
-    title : 'Configured layers',
-    store : 'Layers',
-    itemId : 'layers',
-    autoScroll : true,
-    minHeight : 200,
-    hideHeaders : true,
-    selType : 'cellmodel',
-    viewConfig: {
-        stripeRows: false
-    },
-    initComponent : function() {
-
-        
-        this.columns = [ {
-            dataIndex : "name",
-            sortable : false,
-            flex : 1
-        }, {
-            xtype:'actioncolumn',
-            width:25,
-            itemId: 'settings',
-            items: [{
-                icon: 'resources/images/gear.png',
-                tooltip: 'Settings'
-            }]
-        }, {
-            xtype:'actioncolumn',
-            width:25,
-            itemId: 'delete',
-            items: [{
-                icon: 'resources/images/cross.png',
-                tooltip: 'Delete'
-            }]
-        } ];
-
-        this.callParent(arguments);
-    }
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * WMS Layers
- */
-Ext.define('AdmClient.view.settings.LayersWMS', {
-    extend :  Ext.panel.Panel ,
-    alias : 'widget.layerswms',
-    layout : {
-        type : 'vbox',
-        align : 'stretch'
-    },
-    title : 'WMS layers',
-    initComponent : function() {
-        var wms = Ext.create("GeoExt.data.WmsCapabilitiesLayerStore", {
-            url: '/riges/geoserver/wms?request=GetCapabilities&version=1.1.0',
-            //url : "capabilities.xml",
-            autoLoad : true
-        });
-        
-        this.items = [ {
-            xtype : 'combobox',
-            fieldLabel : 'WMS server'
-        }, {
-            xtype : 'grid',
-            store : wms,
-            itemId : 'wmslayers',
-            flex : 1,
-            hideHeaders : true,
-            autoScroll : true,
-            columns : [ {
-                dataIndex : "name",
-                sortable : true,
-                flex : 1
-            } ]
-        } ];
-
-        this.callParent(arguments);
-    }
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Layers
- */
-Ext.define('AdmClient.view.settings.Layers', {
-    extend :  Ext.panel.Panel ,
-                                                         
-                                     
-                                                       
-                                                  
-    alias : 'widget.layers',
-    title : 'Layers',
-    layout : {
-        type : 'hbox',
-        align : 'stretch'
-    },
-    initComponent : function() {
-
-        this.items = [ {
-            xtype : 'layerswms',
-            //padding : '0 5 0 0',
-            padding : 10,
-            flex : 1
-        }, {
-            layout : {
-                type : 'vbox',
-                align : 'center',
-                pack : 'center'
-            },
-            items : {
-                xtype : 'button',
-                text : 'Add ->',
-                itemId : 'add'
-            }
-        }, {
-            xtype : 'layersconfigured',
-            //padding : '0 0 0 5',
-            padding : 10,
-            flex : 1
-        } ];
-        
-        this.callParent(arguments);
-    }
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Layer settings
- */
-Ext.define('AdmClient.view.settings.LayerSettings', {
-    extend :  Ext.form.Panel ,
-    requires : [],
-    alias : 'widget.layersettings',
-    defaultType: 'textfield',
-    initComponent : function() {
-
-        this.items = [ {
-            fieldLabel : 'Name',
-            name : 'name'
-        } ];
-
-        this.callParent(arguments);
-    }
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle layer view.
-*/
-
-Ext.define('AdmClient.controller.Layers', {
-    extend :  Ext.app.Controller ,
-                                                 
-                                                         
-    refs: [{
-        ref: 'layers',
-        selector: '#layers'
-    },{
-        ref: 'wmslayers',
-        selector: '#wmslayers'
-    }],
-    views: ['settings.Layers'],
-    stores: ['Layers'],
-    
-    init : function() {
-        this.control({
-            '#add': {
-                click: this.onAddClick
-            },
-            '#layers': {
-                edit: this.onEdit
-            },
-            '#save': {
-                click: this.onSaveClick
-            },
-            '#settings': {
-                click: this.onSettingsClick
-            },
-            '#delete': {
-                click: this.onDeleteClick
-            }
-        });
-    },
-
-    onSaveClick: function() {
-        var layers = this.getLayersStore();
-        layers.sync();
-    },
-    onAddClick: function() {
-        var layers = this.getLayersStore();
-        var wmslayers = this.getWmslayers();
-        var selection = wmslayers.getSelectionModel().getSelection();
-        
-        if (selection.length !== 1) return;
-        
-        var wmslayer = selection[0];
-        
-        var layer = Ext.create('AdmClient.model.Layer', {
-            name: wmslayer.get('name'),
-            isGroupLayer : null,
-            wms: {
-                params: {
-                    layers: wmslayer.get('name')
-                }
-            }
-        });
-        
-        layers.add(layer);
-        
-        layer.save();
-    },
-    onEdit: function(editor, e) {
-        e.record.save();
-    },
-    onSettingsClick: function(gridview, rl, rowIndex, colIndex, e, record) {
-        var layerSettings = Ext.create('AdmClient.view.settings.LayerSettings');
-        
-        var w = Ext.create('Ext.Window', {
-            height: 200,
-            width: 300,
-            padding: 10,
-            title: 'Layer settings',
-            layout: 'fit',
-            modal: true,
-            items: layerSettings,
-            buttons: [{ text: 'Save'}]
-        });
-        
-        w.show();
-                
-        layerSettings.getForm().loadRecord(record);
-    },
-    onDeleteClick: function(gridview, rl, rowIndex, colIndex, e, record) {
-        record.destroy();
-    }
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* The mapconfiguration view.
-*/
-
-Ext.define('AdmClient.view.MapConfiguration', {
-	extend :  Ext.panel.Panel ,
-	                                  
-	alias : 'widget.mapConfiguration',
-	layout : 'border',
-	border : false,
-
-	initComponent : function() {
-		this.items = [ {
-			border : false,
-			bodyPadding : 10,
-			region : 'north',
-			tbar : [ {
-				xtype : 'combo',
-				itemId : 'configurations',
-				displayField: 'name',
-				enableKeyEvents : true
-			}, {
-				text : 'Spara',
-				itemId : 'saveConfiguration'
-			} ]
-		}, {
-			xtype : 'tabpanel',
-			region : 'center',
-			items : [ {
-				title : 'Map extent',
-				layout : 'fit',
-				border : false,
-				itemId : 'mapPanel',
-				disabled : true,
-				tbar : [ {
-					xtype : 'button',
-					text : 'Pan',
-					itemId : 'pan',
-					icon : 'resources/images/arrow-move.png',
-					enableToggle : true,
-					pressed : true
-
-				}, {
-					xtype : 'button',
-					itemId : 'markExtent',
-					text : 'Mark extent',
-					icon : 'resources/images/figur-R.png',
-					iconCls : 'extent',
-					enableToggle : true
-				},('->'),{
-					xtype : 'textfield',
-					disabled : true,
-					itemId : 'configId'
-				},{
-					xtype: 'checkbox',
-					fieldLabel : 'Autoclear draw layer',
-					itemId : 'autoClearDrawLayer'
-						},{
-					xtype : 'textfield',
-					itemId : 'attribution',
-					enableKeyEvents : true,
-					fieldLabel : 'Attribution'
-				} ],
-				margin : 12
-			}, {
-				title : 'Tools',
-				layout : 'border',
-				border : false,
-				itemId : 'tools',
-				disabled : true,
-				margin : 12,
-				items : [ {
-					xtype : 'toolsGrid',
-					itemId : 'toolsGrid',
-					region : 'north'
-				}, {
-					xtype : 'panel',
-					region : 'center',
-					itemId : 'toolGeneral'
-				} ]
-			}, {
-				title : 'Search',
-				xtype : 'searchPanel',
-				itemId : 'searchGridConfig',
-				layout : 'fit',
-				disabled : true
-			}, {
-				title : 'Layers',
-				xtype : 'layerPanel',
-				itemId: 'layerTab',
-				disabled : true
-			}, {
-				title: 'Preview',
-				itemId: 'previewMap',
-				layout: 'fit',
-				disabled : true,
-				hidden: true
-			}]
-		}, {
-			title : 'Config',
-			itemId : 'configurationPreviewPanel',
-			layout : 'fit',
-			disabled : true,
-			collapsible : true,
-			collapsed : true,
-			height : 600,
-			region : 'south',
-			items : [{xtype : 'textarea', itemId : 'configurationTextfield'}],
-			bbar : ['->', {
-				xtype : 'button',
-				text : 'Export'
-			}]
-		} ];
-
-		this.callParent(arguments);
-
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* The main page that sets up the UI.
-*/
-
-Ext.define('AdmClient.view.Main', {
-	extend :  Ext.panel.Panel ,
-	                                              
-	alias : 'widget.main',
-
-	title : 'RIGES Administration',
-	layout : 'border',
-	border : false,
-	header : false,
-	bodyPadding : 3,
-	renderTo: 'contentitem',
-	region : 'center',
-
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'tabpanel',
-			tabPosition : 'left',
-//			height : 800,
-			region : 'center',
-			items : [{
-				layout : 'border',
-				margin : 8,
-				title : 'Map configuration',
-				items : [ {
-					xtype : 'mapConfiguration',
-					region : 'center'
-				} ]
-			}]
-		}, 
-		{
-			xtype : 'mainToolbar',
-			region : 'north',
-			style : {
-				marginBottom : '20px'
-			}
-		} 
-		],
-		this.callParent(arguments);
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle main view.
-*/
-
-Ext.define('AdmClient.controller.Main', {
-    extend:  Ext.app.Controller ,
-                                      
-    views: ['Main', 'MapConfiguration'],
-    
-    refs: [{
-      ref: 'form',
-        selector: 'form'
-    },{
-        ref: 'currentZoom',
-        selector: '#currentZoom'
-    },{
-    	ref : 'center',
-    	selector : '#center'
-    }
-    ],
-    
-    init: function() {
-        this.control({
-            '#mapPanel' : {
-            	aftermapmove : this.onMapMove
-            },
-            
-            '#currentZoom' : {
-            	keyup : this.onZoomKeyUp
-            }
-        });
-    },
-    
-    onZoomKeyUp : function(evt, e){
-    	var self = this;
-    	var zoom = parseInt(evt.value, 10);
-    	if ( (zoom > 0)  && (zoom < 20) && (e.keyCode === e.ENTER)){
-    		self.map.setCenter(self.map.center, zoom);
-    	}
-    },
-    
-    setZoom : function(zoom){
-    	
-    }
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle main toolbar.
-*/
-
-
-Ext.define('AdmClient.controller.MainToolbar', {
-	extend :  Ext.app.Controller ,
-	init : function() {
-		this.control({
-			'#about' : {
-				click : this.aboutButtonClick
-			}
-		});
-	},
-	
-	aboutButtonClick : function(btn, evt) {
-		new AdmClient.view.about.About().show();
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle main MapConfiguration view.
-*/
-
-Ext.define('AdmClient.controller.MapConfiguration', {
-	extend :  Ext.app.Controller ,
-	                             
-	                                             
-	                                                               
-	refs : [{
-		ref	: 'configurations',
-		selector : '#configurations'
-	},{
-		ref : 'attribution',
-		selector : '#attribution'
-	},{
-		ref : 'configurationTextfield',
-		selector : '#configurationTextfield'
-	},{
-		ref : 'toolsTab',
-		selector : '#tools'
-	},{
-		ref : 'mapPanel',
-		selector : '#mapPanel'
-	},{
-		ref : 'searchGrid',
-		selector : '#searchGridConfig'
-	},{
-		ref : 'layerTab',
-		selector : '#layerTab'
-	},{
-		ref : 'previewMap',
-		selector : '#previewMap'
-	},{
-		ref : 'configurationPreview',
-		selector: '#configurationPreviewPanel'
-	}, {
-		ref : 'autoClearDrawLayer',
-		selector : '#autoClearDrawLayer'
-	},{
-		ref : 'configurationPreviewPanel',
-		selector : '#configurationPreviewPanel'
-	}
-	],
-	
-	init : function() {
-		this.control({
-			'#pan' : {
-				click : this.panMap
-			},
-			'#markExtent' : {
-				click : this.markExtent
-			},
-			'#mapPanel' : {
-				render : this.mapPanelRender
-			},
-			'#saveConfiguration' : {
-				click : this.saveConfiguration
-			},
-			'#configurations' : {
-				keyup : this.setConfigurationName,
-				render : this.renderConfiguration,
-				select : this.selectConfiguration
-			},
-			'#configurationPreviewPanel' : {
-				hide : this.configurationPreviewPanelHide,
-				expand : this.configurationPreviewPanelShow,
-				beforeshow : this.configurationPreviewPanelBeforeShow
-			},
-			'#attribution' : {
-				keyup : this.setAttribution
-			},
-			'#autoClearDrawLayer' : {
-				change : this.autoClearDrawLayerChanged
-			}
-		});
-
-		this.application.on({
-			configuration_change: this.changeConfiguration,
-			scope: this
-		});
-	},
-
-	panMap : function(btn) {
-		var markExtentButton = Ext.ComponentQuery.query('#markExtent')[0];
-		markExtentButton.toggle();
-
-		var drawRectangleTool = this.mapClient.map.controls.filter(function(t) {
-			return t instanceof OpenLayers.Control.DrawFeature;
-		})[0];
-		
-		if (drawRectangleTool && drawRectangleTool.active) {
-			drawRectangleTool.deactivate();
-		}
-	},
-
-	markExtent : function(btn) {
-		var panButton = Ext.ComponentQuery.query('#pan')[0];
-		panButton.toggle();
-
-		var drawRectangleTool = this.mapClient.map.controls.filter(function(t) {
-			return t instanceof OpenLayers.Control.DrawFeature;
-		})[0];
-		
-		if (drawRectangleTool) {
-			drawRectangleTool.activate();
-		}
-	},
-	
-	mapClient : null,
-	mapPanelRender : function(panel) {
-		this.mapClient = Ext.create('OpenEMap.Client');
-		
-		Ext.Ajax.request({
-			scope : this,
-			url : 'admin.json',
-			success : function(response) {
-				var config = Ext.decode(response.responseText);
-				
-				AdmClient.app.config = Ext.applyIf(AdmClient.app.config, config);
-				var gui = {
-					map : {},
-					zoomTools : {}
-				};
-				if (this.mapClient){
-					this.mapClient.destroy();
-				}
-				this.mapClient.configure(Ext.clone(config), {
-					gui : gui
-				});
-
-				panel.add(this.mapClient.gui.container);
-				panel.doLayout();
-
-				var drawRectangelTool = new OpenLayers.Control.DrawFeature(
-						this.mapClient.mapPanel.drawLayer,
-						OpenLayers.Handler.RegularPolygon, {
-							handlerOptions : {
-								sides : 4,
-								irregular : true
-							}
-						});
-				this.mapClient.map.addControl(drawRectangelTool);
-				
-				this.mapClient.drawLayer.events.register('featureadded', null, function(){
-					AdmClient.app.config.extent = arguments[0].feature.geometry.getBounds().toArray();
-				});
-			}
-		});
-	},
-	
-	saveConfiguration : function(){
-		var self = this;
-		if (AdmClient.app.config.name === 'Default'){
-			Ext.MessageBox.alert('"Default" is an invalid configuration name.', 'You are trying to write to a write protected template. Choose another template name');
-			return;
-		}
-		// Update config.layers
-        var s = Ext.getStore('configurationTreeStore');
-        AdmClient.app.config.layers = s.getLayerConfiguration();
-		
-		AdmClient.app.config.isPublic = true;
-		var url = appPath + '/adminconfigs/config';
-		url += AdmClient.app.config.configId === undefined ? '' : ('/' + AdmClient.app.config.configId);
-		var method = AdmClient.app.config.configId === undefined ? 'POST' : 'PUT';
-		Ext.Ajax.request({
-			url : url,
-			method : method,
-			jsonData : AdmClient.app.config,
-			success : function(evt){
-				Ext.MessageBox.alert('Save', 'Configuration saved');
-				self.renderConfiguration();
-			},
-			failure : function(evt){
-				Ext.MessageBox.alert('Error', 'Error saving: ' + evt.message);
-			}
-			
-		});
-	},
-	
-	setConfigurationName : function(combo, e, eOpts){
-		AdmClient.app.config.name = combo.getValue();
-		AdmClient.app.config.configId = undefined;
-		this.getConfigId().setValue(AdmClient.app.config.configId || '');
-		this.setConfigText();
-	},
-	
-	
-	renderConfiguration : function(){
-		var self = this;
-		Ext.Ajax.request({
-			url : appPath + '/configs',
-			method : 'GET',
-			success : function(evt){
-				var configs = JSON.parse(evt.responseText);
-				var configurations = Ext.create('Ext.data.Store',{
-					fields : ['name', 'configId'],
-					data :  configs
-				});
-				var combo = self.getConfigurations();
-				combo.store = configurations;
-				combo.queryMode = 'local';
-				combo.displayField = 'name';
-				combo.valueField = 'configId';
-			},
-			error : function(evt){
-				Ext.MessageBox.alert('Erro', 'Error getting configurations: ' + evt.message);
-			}
-		});
-	},
-
-	selectConfiguration : function(combo, records){
-		if(records.length > 0) {
-			this.loadConfiguration(	records[0].get('configId'));
-		}
-	},
-
-	changeConfiguration: function(config) {
-		AdmClient.app.config = Ext.apply(AdmClient.app.config,config);
-		this.getAttribution().setValue(AdmClient.app.config.attribution);
-		this.getToolsTab().setDisabled(false);
-		this.getMapPanel().setDisabled(false);
-		this.getSearchGrid().setDisabled(false);
-		this.getPreviewMap().setDisabled(false);
-		if (this.getPreviewMap().isVisible()) {
-    		AdmClient.app.getPreviewMapController().previewRender(this.getPreviewMap());
-		}
-		this.getLayerTab().setDisabled(false);
-		this.getConfigurationPreview().setDisabled(false);
-		this.getAutoClearDrawLayer().setValue(AdmClient.app.config.autoClearDrawLayer || false); 
-		
-		if (AdmClient.app.config.extent){
-			var bounds = OpenLayers.Bounds.fromArray(AdmClient.app.config.extent);
-			this.mapClient.map.zoomToExtent(bounds);
-		}
-		var configTitle = 'Config - ' + AdmClient.app.config.name + ' (' + AdmClient.app.config.configId.toString() + ')';
-		//this.getConfigurationPreviewPanel().setTitle(configTitle);
-	},
-
-	loadConfiguration: function(id) {
-		Ext.Ajax.request({
-			url : appPath + '/configs/config/' + id,
-			method : 'GET',
-			success : function(evt){
-				var config = JSON.parse(evt.responseText);
-				this.application.fireEvent('configuration_change', config);
-			},
-			error : function(evt){
-				Ext.MessageBox.alert('Erro', 'Error getting configuration: ' + id + ', ' + evt.message);
-			},
-			scope: this
-		});
-	},
-	
-
-	
-	configurationPreviewPanelShow : function(panel, eOpts){
-		 this.setConfigText();
-	},
-	
-	setConfigText : function(){
-		var conf = JSON.stringify(AdmClient.app.config, null, ' ');
-		var configTextArea = this.getConfigurationTextfield();
-		configTextArea.setValue(conf);
-	},
-	
-	setAttribution : function(){
-		AdmClient.app.config.attribution = this.getAttribution().getValue();
-		this.setConfigText();
-	},
-	
-	autoClearDrawLayerChanged : function(box, newValue, oldValue, eOpts){
-		AdmClient.app.config.autoClearDrawLayer = newValue;
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Preview map
- */
-Ext.define('AdmClient.view.mapconfiguration.map.PreviewMap', {
-	extend :  Ext.panel.Panel ,
-	                                                                    
-	alias : 'widget.previewMap',
-
-	initComponent : function() {
-		this.items = [ {
-			border : false,
-			itemId : 'previewMapPanel',
-			margin : 12
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle preview map - obselete
-*/
-
-
-Ext.define('AdmClient.controller.PreviewMap', {
-	extend :  Ext.app.Controller ,
-	                                                               
-
-	init : function() {
-		this.control({
-			'#previewMap' : {
-				show : this.previewRender
-			}
-		});
-	},
-
-	previewRender : function(panel) {
-		
-		
-		if (this.mapPanel){
-			this.mapPanel.removeAll();
-			delete this.mapPanel;
-			panel.doLayout();
-		}
-		
-		this.mapPanel = panel;
-		
-		var mapClient = Ext.create('OpenEMap.Client');
-
-		var gui = {
-				map : {},
-//    			toolbar: {}, // at the moment this don't work
-    			zoomTools: {},
-    			layers: {},
-    			baseLayers: {},
-    			objectconfig : {}
-		};
-		
-		mapClient.destroy();
-		var config = Ext.clone(AdmClient.app.config);
-		
-		mapClient.configure(config, {
-			gui : gui
-		});
-
-		panel.add(mapClient.gui.container);
-		panel.doLayout();
-	}
-	
-	
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Search panel
- *
- *{@img search.png}
- *
- * In this view the administrator simple checks the municipalies the configuration 
- * should search inside. 
- * 
- * The view uses an Arraystore to populate lists.
- */
-Ext.define('AdmClient.view.mapconfiguration.search.SearchPanel', {
-	extend :  Ext.grid.Panel ,
-	alias : 'widget.searchPanel',
-
-	initComponent : function() {
-		
-		Ext.applyIf(this, {
-
-			columns : [ {
-				text : 'Municipality',
-				dataIndex : 'Municipality',
-				width : 200
-			}, {
-				xtype : 'checkcolumn',
-				dataIndex : 'selected'
-			} ]
-		});
-
-		this.store = new AdmClient.store.Municipalities();
-		this.callParent(arguments);
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle main search view.
-*/
-
-
-Ext.define('AdmClient.controller.Search', {
-	extend :  Ext.app.Controller ,
-	                                                                                                      
-	refs : [{
-			ref	: 'configurations',
-			selector : '#configurations'
-		},{
-			ref : 'searchGrid',
-			selector : '#searchGridConfig'
-	}],
-	
-	init : function() {
-		this.control({
-			'#searchGridConfig' :{
-				render : this.markGrid
-
-			},
-			'#searchGridConfig checkcolumn' : {
-				checkchange : this.municipalityChanged
-			}
-		});
-
-		this.application.on({
-            configuration_change: this.configurationChanged,
-            scope: this
-        });
-	},
-
-	markGrid : function(){
-
-		var panel = this.getSearchGrid();
-		for (var i = 0; i < panel.store.data.items.length; i++){
-			panel.store.data.items[i].data.selected = false;
-			panel.store.data.items[i].save();
-		}
-
-		for (i = 0; i < panel.store.data.items.length; i++){
-			panel.store.data.items[i].data.selected = false;
-			var municipality = panel.store.data.items[i];
-			if (AdmClient.app.config.search){
-				for (var j = 0; j < AdmClient.app.config.search.searchAddresses.options.municipalities.length; j++){
-					var searchMunicipality = AdmClient.app.config.search.searchAddresses.options.municipalities[j];
-					if (searchMunicipality.constructor === String){
-						if (searchMunicipality === municipality.data.Municipality){
-							municipality.data.selected = true;
-							municipality.save();
-						}
-					}
-				}
-			}
-		}
-		panel.updateLayout();
-
-	},
-	
-	configurationChanged : function(){
-		this.markGrid();
-	},
-	
-	municipalityChanged : function(chkBox, rowIndex, checked, eOpts){
-
-		var store = this.getSearchGrid().getStore();
-		store.sync();
-		
-		AdmClient.app.config.search = AdmClient.app.config.search || {};
-		AdmClient.app.config.search.searchEstates = {};
-		AdmClient.app.config.search.searchEstates.options = {};
-		AdmClient.app.config.search.searchEstates.options.municipalities = [];
-
-		AdmClient.app.config.search.searchAddresses = {};
-		AdmClient.app.config.search.searchAddresses.options = {};
-		AdmClient.app.config.search.searchAddresses.options.municipalities = [];
-		
-		AdmClient.app.config.search.searchPlacenames = {};
-		AdmClient.app.config.search.searchPlacenames.options = {};
-		AdmClient.app.config.search.searchPlacenames.options.municipalities = [];
-
-		
-		var municipalities = store.data.items.forEach(function(m){
-			if (m.data.selected){
-				AdmClient.app.config.search.searchEstates.options.municipalities.push(m.data.Municipality);
-				AdmClient.app.config.search.searchAddresses.options.municipalities.push(m.data.Municipality);
-				AdmClient.app.config.search.searchPlacenames.options.municipalities.push(m.data.municipalityCode);
-			}
-		});
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle servers view.
-*/
-
-Ext.define('AdmClient.controller.Servers', {
-	extend :  Ext.app.Controller ,
-	init : function() {
-		this.control({
-
-			'#addSettingsRow' : {
-				click : this.settingsGridAdd
-			},
-			'#saveSettings' : {
-				click : this.save
-			}
-		});
-	},
-
-	serversGridEdit : function(editor, e) {
-	},
-
-	searchGridEdit : function(editor, e) {
-	},
-
-	settingsGridAdd : function(btn, e) {
-		var query = 'button[id=' + btn.id + '] ^ grid'; // something like ('button[id=button-1049] ^ grid')
-		var grids = Ext.ComponentQuery.query(query);
-		if (grids && grids instanceof Array) {
-			var grid = grids[0];
-			grid.getStore().add({});
-		}
-	},
-	
-	save: function(btn, e){
-		var grid = Ext.ComponentQuery.query('button[id=' + btn.getId() +'] ^ grid')[0];
-		if (grid){
-			var store = grid.getStore();
-			store.sync({callback : function(){
-				grid.getStore().load();
-			}});
-			grid.getStore().commitChanges();
-			
-		}
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Identify configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.Identify', {
-	extend :  Ext.panel.Panel ,
-	alias : 'widget.identify',
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'button',
-			text : 'Identify'
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Draw geometry configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.DrawGeometry', {
-	extend :  Ext.panel.Panel ,
-
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'button',
-			text : 'draw geometry'
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Print configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.Print', {
-	extend :  Ext.panel.Panel ,
-	alias : 'widget.print',
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'button',
-			text : 'Print'
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Delete geometry configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.DeleteGeometry', {
-	extend :  Ext.panel.Panel ,
-	alias : 'widget.deletegeometry',
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'button',
-			text : 'DeleteGeometry'
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Modify geometry configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.ModifyGeometry', {
-	extend :  Ext.panel.Panel ,
-	alias : 'widget.modifygeometry',
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'button',
-			text : 'ModifyGeometry'
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Measure line configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.MeasureLine', {
-	extend :  Ext.panel.Panel ,
-	alias : 'widget.measureline',
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'button',
-			text : 'MeasureLine'
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Draw object configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.DrawObject', {
-	extend :  Ext.form.Panel ,
-	alias : 'widget.drawobject',
-	
-	type: 'drawobject',
-	
-	typeLabel: 'Type',
-    widthLabel: 'Width',
-    lengthLabel: 'Length',
-    m1Label: 'M1',
-    m2Label: 'M2',
-    angleLabel: 'Angle',
-    
-	initComponent : function() {
-	    
-	    var formItems = [{
-            xtype: 'numberfield',
-            fieldLabel: this.widthLabel,
-            itemId: 'w',
-            minValue: 0
-        },{
-            xtype: 'numberfield',
-            fieldLabel: this.lengthLabel,
-            itemId: 'l',
-            minValue: 0
-        },{
-            xtype: 'numberfield',
-            fieldLabel: this.m1Label,
-            itemId: 'm1',
-            minValue: 0
-        },{
-            xtype: 'numberfield',
-            fieldLabel: this.m2Label,
-            itemId: 'm2',
-            minValue: 0
-        },{
-            xtype: 'numberfield',
-            itemId: 'angle',
-            fieldLabel: this.angleLabel,
-            value: 0
-        }];
-	    
-		this.items = [ {
-			xtype : 'checkboxfield',
-			boxLabel : 'User customizable'
-		}, {
-		    width: 230,
-		    xtype : 'radiogroup',
-            vertical : true,
-            fieldLabel: 'Type',
-            itemId: 'type',
-		    items : [ {
-                boxLabel : '<div class="objectconfig-radio-r"></div>',
-                name : 'rb',
-                inputValue : 'R',
-                checked : true
-            }, {
-                boxLabel : '<div class="objectconfig-radio-l"></div>',
-                name : 'rb',
-                enabled: false,
-                inputValue : 'L'
-            }, {
-                boxLabel : '<div class="objectconfig-radio-d"></div>',
-                name : 'rb',
-                enabled: false,
-                inputValue : 'D'
-            }, {
-                boxLabel : '<div class="objectconfig-radio-o"></div>',
-                name : 'rb',
-                enabled: false,
-                inputValue : 'O'
-            } ]
-		} ];
-		
-		this.items = this.items.concat(formItems);
-		
-		this.callParent(arguments);
-		
-		this.getConfig();
-	},
-	
-	setConfig: function() {
-	    var toolCfg = this.getToolConfig();
-	},
-	
-	getConfig: function() {
-	    var toolCfg = this.getToolConfig();
-	    var objectConfig = toolCfg.objectConfig;
-	    
-	    if (objectConfig) {
-	        objectConfig.type = this.down('#type').getValue();
-	    }
-	},
-	
-	getToolConfig: function() {
-	    return AdmClient.app.config.tools.filter(function(tool) {
-	        return (tool.type = this.type);
-	    }, this);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Full extent configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.FullExtent', {
-	extend :  Ext.panel.Panel ,
-	alias : 'widget.fullextent',
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'button',
-			text : 'FullExtent'
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * General tool configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.General', {
-	extend :  Ext.tab.Panel ,
-	                                                                     
-	style : {
-		marginTop : '20px'
-	},
-
-	toolName : null,
-
-	constructor : function() {
-		this.tool = arguments[0] || '';
-		this.toolName = arguments[1] || '';
-		this.callParent(arguments);
-	},
-
-	initComponent : function() {
-		this.items = [ {
-
-			title : 'Settings for tool ' + this.toolName,
-
-			items : [ {
-				title : 'General settings',
-				xtype : 'fieldset',
-				items : [ {
-					xtype : 'textfield',
-					fieldLabel : 'Tooltip'
-				}, {
-					xtype : 'textfield',
-					fieldLabel : 'Min scale',
-					maskRe : /[0-9]/
-				} ]
-			}, {
-				xtype : 'fieldset',
-				title : 'Details settings',
-				itemId : 'details'
-			} ]
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * Measure area configuration details
- */
-Ext.define('AdmClient.view.mapconfiguration.tools.details.MeasureArea', {
-	extend :  Ext.panel.Panel ,
-	alias : 'widget.measurearea',
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'button',
-			text : 'MeasureArea'
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle main tools grid.
-*/
-
-
-Ext.define('AdmClient.controller.ToolsGrid', {
-	extend :  Ext.app.Controller ,
-	                                                                                                   
-	refs : [{
-		ref	: 'configurations',
-		selector : '#configurations'
-	},{
-		ref : 'toolsGrid',
-		selector : '#toolsGrid'
-	},{
-		ref : 'toolGeneral',
-		selector : '#toolGeneral'
-	}],
-	init : function() {
-		this.control({
-
-			'#toolsGrid' : {
-				render : this.gridRender
-			},
-			
-			'#details' : {
-				render : this.detailsRender
-			}
-		});
-
-		this.application.on({
-            configuration_change: this.markTools,
-            scope: this
-        });
-	},
-
-	views : [],
-	
-	gridRender : function(panel, opts) {
-		this.markTools();
-	},
-	
-	markTools : function(){
-		var panel = this.getToolsGrid();
-		for (var i = 0; i < panel.store.data.items.length; i++){
-			panel.store.data.items[i].data.selected = false;
-			panel.store.data.items[i].save();
-		}
-		
-		
-		// IMPORTANT
-		// this needs to rewrite
-		for (i = 0; i < panel.store.data.items.length; i++){
-			panel.store.data.items[i].data.selected = false;
-			var toolName = panel.store.data.items[i];
-			for (var j = 0; j < AdmClient.app.config.tools.length; j++){
-				var configTool = AdmClient.app.config.tools[j];
-				if (configTool.constructor === String){
-					if (configTool === toolName.data.toolName){
-						toolName.data.selected = true;
-						toolName.save();
-					}
-				} else if (configTool.type === toolName.data.toolName){
-					if (configTool.geometry && configTool.geometry === toolName.data.tool){
-						toolName.data.selected = true;
-					} else if(configTool.geometry && configTool.geometry !== toolName.data.tool){
-						continue;
-					} 
-					else if(configTool.type && toolName.data.toolName){
-						toolName.data.selected = true;
-					}
-					toolName.save();
-				}
-			}
-		}
-		panel.updateLayout();
-	},
-	
-	toolsHasEmptyObject : function(){
-		for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-			if (Object.keys(AdmClient.app.config.tools[i]).length > 0){
-				return true;
-			}
-		}
-		return false;
-	},
-	
-	// function show details about a tool
-	detailsRender : function() {
-		var detailsPanel = arguments[0];
-		detailsPanel.removeAll(false);
-		var toolName = this.getToolsGrid().getSelectionModel().selected.items[0].data.toolName;
-		var tool = 'AdmClient.view.mapconfiguration.tools.details.' + toolName;
-		var toolPanel = Ext.create(tool);
-		detailsPanel.add(toolPanel);
-	}
-	
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle tooldetails for delete all features tool.
-*/
-
-
-Ext.define('AdmClient.controller.toolDetails.DeleteAllFeatures', {
+Ext.define('AdmClient.controller.toolDetails.DrawPoint', {
 	extend :  AdmClient.controller.MapConfiguration ,
 	                                                                                                   
 	refs : [{
@@ -3281,257 +3244,29 @@ Ext.define('AdmClient.controller.toolDetails.DeleteAllFeatures', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/DeleteAllFeatures/.test(toolObject.toolName)){
+		if (/Point/.test(toolObject.tool)){
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'DeleteAllFeatures';
+					return t.tool === 'Point';
 				});
 				
 				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DeleteAllFeatures'};
+					tool = {type: 'DrawGeometry', iconCls : 'action-drawpoint', geometry : 'Point'};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/DeleteAllFeatures/.test(toolObject.toolName)){
-				
+			} else {
 				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
 					tool = AdmClient.app.config.tools[i];
-					if (/DeleteAllFeatures/.test(tool.type)){
+					if (/DrawGeometry/.test(tool.type) && /Point/.test(tool.geometry)){
 						AdmClient.app.config.tools.splice(i, 1);
 					}
 				}
 			}
+			this.getToolsGrid().store.commitChanges();
 		}
-		
-		this.getToolsGrid().store.commitChanges();
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle tooldetails for delete all features tool.
-*/
-
-Ext.define('AdmClient.controller.toolDetails.DeleteGeometry', {
-	extend :  AdmClient.controller.MapConfiguration ,
-	                                                                                                   
-	refs : [{
-		ref : 'toolsGrid',
-		selector : '#toolsGrid'
-	}],
-	init : function() {
-		this.control({
-			'#toolsGrid checkcolumn' : {
-				checkchange : this.toolSelected
-			}
-		});
-	},
-	
-	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (checked){
-			if (/DeleteGeometry/.test(toolObject.toolName)){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'DeleteGeometry';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DeleteGeometry'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			}
-		}
-		else{
-			if (/DeleteGeometry/.test(toolObject.toolName)){
-				
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DeleteGeometry/.test(tool.type)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-		}
-		
-		this.getToolsGrid().store.commitChanges();
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle tooldetails for delete measure tool.
-*/
-
-Ext.define('AdmClient.controller.toolDetails.DeleteMeasure', {
-	extend :  AdmClient.controller.MapConfiguration ,
-	                                                                                                   
-	refs : [{
-		ref : 'toolsGrid',
-		selector : '#toolsGrid'
-	}],
-	init : function() {
-		this.control({
-			'#toolsGrid checkcolumn' : {
-				checkchange : this.toolSelected
-			}
-		});
-	},
-	
-	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (checked){
-			if (/DeleteMeasure/.test(toolObject.toolName)){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'DeleteMeasure';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DeleteMeasure'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			}
-		}
-		else{
-			if (/DeleteMeasure/.test(toolObject.toolName)){
-				
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DeleteMeasure/.test(tool.type)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-		}
-		
-		this.getToolsGrid().store.commitChanges();
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle tooldetails for details report tool.
-*/
-
-Ext.define('AdmClient.controller.toolDetails.DetailReport', {
-	extend :  AdmClient.controller.MapConfiguration ,
-	                                                                                                   
-	refs : [{
-		ref : 'toolsGrid',
-		selector : '#toolsGrid'
-	}],
-	init : function() {
-		this.control({
-			'#toolsGrid checkcolumn' : {
-				checkchange : this.toolSelected
-			}
-		});
-	},
-	
-	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (checked){
-			if (/DetailReport/.test(toolObject.toolName)){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'DetailReport';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DetailReport'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			}
-		}
-		else{
-			if (/DetailReport/.test(toolObject.toolName)){
-				
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DetailReport/.test(tool.type)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-		}
-		
-		this.getToolsGrid().store.commitChanges();
 	}
 });
 
@@ -3577,11 +3312,10 @@ Ext.define('AdmClient.controller.toolDetails.DrawPath', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/Path/.test(toolObject.tool)){
+		if (/Path/.test(toolObject.tool)){
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
 					return t.tool === 'Path';
@@ -3591,97 +3325,17 @@ Ext.define('AdmClient.controller.toolDetails.DrawPath', {
 					tool = {type: 'DrawGeometry', iconCls : 'action-drawline', geometry : 'Path'};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/Path/.test(toolObject.tool)){
-				
+			} else {
 				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
 					tool = AdmClient.app.config.tools[i];
-					if (/Path/.test(tool.geometry)){
+					if (/DrawGeometry/.test(tool.type) && /Path/.test(tool.geometry)){
 						AdmClient.app.config.tools.splice(i, 1);
 					}
 				}
 			}
 		}
-		
 		this.getToolsGrid().store.commitChanges();
 	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle tooldetails for draw point tool.
-*/
-
-Ext.define('AdmClient.controller.toolDetails.DrawPoint', {
-	extend :  AdmClient.controller.MapConfiguration ,
-	                                                                                                   
-	refs : [{
-		ref : 'toolsGrid',
-		selector : '#toolsGrid'
-	}],
-	init : function() {
-		this.control({
-			'#toolsGrid checkcolumn' : {
-				checkchange : this.toolSelected
-			}
-		});
-	},
-	
-	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (checked){
-			if (/Point/.test(toolObject.tool)){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Point';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DrawGeometry', iconCls : 'action-drawpoint', geometry : 'Point'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			}
-		}
-		else{
-			if (/Point/.test(toolObject.tool)){
-				
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/Point/.test(tool.geometry)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-		}
-		
-		this.getToolsGrid().store.commitChanges();
-	}
-	
 });
 
 /*
@@ -3729,8 +3383,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawPolygon', {
 		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/Polygon/.test(toolObject.tool)){
+		if (/Polygon/.test(toolObject.tool)){
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
 					return t.tool === 'Polygon';
@@ -3740,97 +3394,16 @@ Ext.define('AdmClient.controller.toolDetails.DrawPolygon', {
 					tool = {type: 'DrawGeometry', iconCls : 'action-drawpolygon', geometry : 'Polygon'};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/Polygon/.test(toolObject.tool)){
-				
+			} else {
 				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
 					tool = AdmClient.app.config.tools[i];
-					if (/Polygon/.test(tool.geometry)){
+					if (/DrawGeometry/.test(tool.type) && /Polygon/.test(tool.geometry)){
 						AdmClient.app.config.tools.splice(i, 1);
 					}
 				}
 			}
+			this.getToolsGrid().store.commitChanges();
 		}
-		
-		this.getToolsGrid().store.commitChanges();
-	}
-	
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/**
-* A controller to handle tooldetails for full extent tool.
-*/
-
-
-Ext.define('AdmClient.controller.toolDetails.FullExtent', {
-	extend :  AdmClient.controller.MapConfiguration ,
-	                                                                                                   
-	refs : [{
-		ref : 'toolsGrid',
-		selector : '#toolsGrid'
-	}],
-	init : function() {
-		this.control({
-			'#toolsGrid checkcolumn' : {
-				checkchange : this.toolSelected
-			}
-		});
-	},
-	
-	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (checked){
-			if (/FullExtent/.test(toolObject.toolName)){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'FullExtent';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'FullExtent'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			}
-		}
-		else{
-			if (/FullExtent/.test(toolObject.toolName)){
-				
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/FullExtent/.test(tool.type)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-		}
-		
-		this.getToolsGrid().store.commitChanges();
 	}
 });
 
@@ -3857,10 +3430,10 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
-* A controller to handle tooldetails for identify tool.
+* A controller to handle tooldetails for draw polygon tool.
 */
 
-Ext.define('AdmClient.controller.toolDetails.Identify', {
+Ext.define('AdmClient.controller.toolDetails.DrawText', {
 	extend :  AdmClient.controller.MapConfiguration ,
 	                                                                                                   
 	refs : [{
@@ -3879,32 +3452,28 @@ Ext.define('AdmClient.controller.toolDetails.Identify', {
 		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/Identify/.test(toolObject.toolName)){
+		if (/Text/.test(toolObject.tool)) {
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Identify';
+					return (t === 'Text' || t.tool === 'Text');
 				});
-				
 				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'Identify'};
+					tool = {type: 'DrawGeometry', tooltip : 'Rita etikett', iconCls : 'action-drawpoint', geometry : 'Point', attributes: {type: 'label', label: 'Ny label', metadata: {type: {hidden: true}}}};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/Identify/.test(toolObject.toolName)){
-				
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/Identify/.test(tool.type)){
-						AdmClient.app.config.tools.splice(i, 1);
+			} else {
+				if (/Text/.test(toolObject.tool)){
+					for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+						tool = AdmClient.app.config.tools[i];
+						if ((/Point/.test(tool.geometry)) && tool.attributes && (/label/.test(tool.attributes.type))) {
+							AdmClient.app.config.tools.splice(i, 1);
+						}
 					}
 				}
 			}
+			this.getToolsGrid().store.commitChanges();
 		}
-		
-		this.getToolsGrid().store.commitChanges();
 	}
 });
 
@@ -3931,10 +3500,10 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
-* A controller to handle tooldetails for measure area tool.
+* A controller to handle tooldetails for draw polygon tool.
 */
 
-Ext.define('AdmClient.controller.toolDetails.MeasureArea', {
+Ext.define('AdmClient.controller.toolDetails.DrawRectangle', {
 	extend :  AdmClient.controller.MapConfiguration ,
 	                                                                                                   
 	refs : [{
@@ -3950,35 +3519,29 @@ Ext.define('AdmClient.controller.toolDetails.MeasureArea', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/MeasureArea/.test(toolObject.toolName)){
+		if (/Rectangle/.test(toolObject.tool)){
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Identify';
+					return t.tool === 'Rectangle';
 				});
 				
 				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'MeasureArea'};
+					tool = {type : 'DrawObject', itemId : 'DrawObjectR', tooltip : 'Rita rektangel', iconCls : 'action-draw-R', disable : false, obectConfig : {type : 'R'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/MeasureArea/.test(toolObject.toolName)){
-				
+			} else {
 				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
 					tool = AdmClient.app.config.tools[i];
-					if (/MeasureArea/.test(tool.type)){
+					if (/DrawObjectR/.test(tool.itemId)){
 						AdmClient.app.config.tools.splice(i, 1);
 					}
 				}
 			}
+			this.getToolsGrid().store.commitChanges();
 		}
-		
-		this.getToolsGrid().store.commitChanges();
 	}
 });
 
@@ -4005,10 +3568,10 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
-* A controller to handle tooldetails for measure line tool.
+* A controller to handle tooldetails for draw polygon tool.
 */
 
-Ext.define('AdmClient.controller.toolDetails.MeasureLine', {
+Ext.define('AdmClient.controller.toolDetails.DrawOctagon', {
 	extend :  AdmClient.controller.MapConfiguration ,
 	                                                                                                   
 	refs : [{
@@ -4024,35 +3587,165 @@ Ext.define('AdmClient.controller.toolDetails.MeasureLine', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/MeasureLine/.test(toolObject.toolName)){
+		if (/Octagon/.test(toolObject.tool)){
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Identify';
+					return t.tool === 'Octagon';
 				});
 				
 				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'MeasureLine'};
+					tool = {type : 'DrawObject', itemId : 'DrawObjectO', tooltip : 'Rita åttkantigt objekt', iconCls : 'action-draw-O', disable : false, obectConfig : {type : 'O'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/MeasureLine/.test(toolObject.toolName)){
-				
+			} else {
 				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
 					tool = AdmClient.app.config.tools[i];
-					if (/MeasureLine/.test(tool.type)){
+					if (/DrawObjectO/.test(tool.itemId)){
 						AdmClient.app.config.tools.splice(i, 1);
 					}
 				}
 			}
+			this.getToolsGrid().store.commitChanges();
 		}
-		
-		this.getToolsGrid().store.commitChanges();
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for draw polygon tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.DrawL-shape', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/L-shape/.test(toolObject.tool)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return t.tool === 'L-shape';
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type : 'DrawObject', itemId : 'DrawObjectL', tooltip : 'Rita L-format objekt', iconCls : 'action-draw-L', disable : false, obectConfig : {type : 'L'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if (/DrawObjectL/.test(tool.itemId)){
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for draw polygon tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.DrawD-shape', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/D-shape/.test(toolObject.tool)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return t.tool === 'D-shape';
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type : 'DrawObject', itemId : 'DrawObjectD', tooltip : 'Rita objekt med avfasade hörn', iconCls : 'action-draw-D', disable : false, obectConfig : {type : 'D'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if (/DrawObjectD/.test(tool.itemId)){
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
 	}
 });
 
@@ -4101,32 +3794,370 @@ Ext.define('AdmClient.controller.toolDetails.ModifyGeometry', {
 		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/ModifyGeometry/.test(toolObject.toolName)){
+		if (/ModifyGeometry/.test(toolObject.toolName)){
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'ModifyGeometry';
+					return (t === 'ModifyGeometry' || t.tool === 'ModifyGeometry');
 				});
 				
 				if (configItems.length === 0){ // add tool to config object
 					tool = {type: 'ModifyGeometry'};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/ModifyGeometry/.test(toolObject.toolName)){
-				
+			} else {
 				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
 					tool = AdmClient.app.config.tools[i];
-					if (/ModifyGeometry/.test(tool.type)){
+					if ((/ModifyGeometry/.test(tool.type)) || (/ModifyGeometry/.test(tool))) {
 						AdmClient.app.config.tools.splice(i, 1);
 					}
 				}
 			}
+			this.getToolsGrid().store.commitChanges();
 		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for select geometry tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.SelectGeometry', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
 		
-		this.getToolsGrid().store.commitChanges();
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/SelectGeometry/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'SelectGeometry' || t.tool === 'SelectGeometry');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'SelectGeometry'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if ((/SelectGeometry/.test(tool.type)) || (/SelectGeometry/.test(tool))) {
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for delete all features tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.DeleteGeometry', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/DeleteGeometry/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'DeleteGeometry' || t.tool === 'DeleteGeometry');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'DeleteGeometry'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if ((/DeleteGeometry/.test(tool.type)) || (/DeleteGeometry/.test(tool))) {
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for delete all features tool.
+*/
+
+
+Ext.define('AdmClient.controller.toolDetails.DeleteAllFeatures', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/DeleteAllFeatures/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'DeleteAllFeatures' || t.tool === 'DeleteAllFeatures');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'DeleteAllFeatures'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if ((/DeleteAllFeatures/.test(tool.type)) || (/DeleteAllFeatures/.test(tool))) {
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for full extent tool.
+*/
+
+
+Ext.define('AdmClient.controller.toolDetails.FullExtent', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/FullExtent/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'FullExtent' || t.tool === 'FullExtent');
+				});
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'FullExtent'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if ((/FullExtent/.test(tool.type)) || (/FullExtent/.test(tool))) {
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for delete measure tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.ZoomSelector', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/ZoomSelector/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'ZoomSelector' || t.tool === 'ZoomSelector');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'ZoomSelector'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if (/ZoomSelector/.test(tool) || /ZoomSelector/.test(tool.type)){
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
 	}
 });
 
@@ -4176,32 +4207,27 @@ Ext.define('AdmClient.controller.toolDetails.Print', {
 		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/Print/.test(toolObject.toolName)){
+		if (/Print/.test(toolObject.toolName)){
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Print';
+					return (t === 'Print' || t.tool === 'Print');
 				});
 				
 				if (configItems.length === 0){ // add tool to config object
 					tool = {type: 'Print'};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/Print/.test(toolObject.toolName)){
-				
+			} else {
 				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
 					tool = AdmClient.app.config.tools[i];
-					if (/Print/.test(tool.type)){
+					if ((/Print/.test(tool.type)) || (/Print/.test(tool))) {
 						AdmClient.app.config.tools.splice(i, 1);
 					}
 				}
 			}
+			this.getToolsGrid().store.commitChanges();
 		}
-		
-		this.getToolsGrid().store.commitChanges();
 	}
 });
 
@@ -4228,10 +4254,214 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
-* A controller to handle tooldetails for select geometry tool.
+* A controller to handle tooldetails for identify tool.
 */
 
-Ext.define('AdmClient.controller.toolDetails.SelectGeometry', {
+Ext.define('AdmClient.controller.toolDetails.Identify', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/Identify/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'Identify' || t.tool === 'Identify');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'Identify', tooltip: 'Få information om objekt i kartan', iconCls: 'action-identify'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if ((/Identify/.test(tool.type)) || (/Identify/.test(tool))) {
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for identify tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.Popup', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/Popup/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'Popup' || t.tool === 'Popup');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'Popup', showOnlyFirstHit: true, tolerance: 3, iconCls: 'action-popup', tooltip: 'Klicka på ett object för information'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if ((/Popup/.test(tool.type)) || (/Popup/.test(tool))) {
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for details report tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.DetailReport', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/DetailReport/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'DetailReport' || t.tool === 'DetailReport');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'DetailReport'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if ((/DetailReport/.test(tool.type)) || (/DetailReport/.test(tool))) {
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for measure line tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.MeasureLine', {
 	extend :  AdmClient.controller.MapConfiguration ,
 	                                                                                                   
 	refs : [{
@@ -4250,32 +4480,27 @@ Ext.define('AdmClient.controller.toolDetails.SelectGeometry', {
 		
 		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
 		var tool = null;
-		if (checked){
-			if (/SelectGeometry/.test(toolObject.toolName)){
+		if (/MeasureLine/.test(toolObject.toolName)){
+			if (checked){
 				//find the right place in config object
 				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'SelectGeometry';
+					return (t === 'Identify' || t.tool === 'Identify');
 				});
 				
 				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'SelectGeometry'};
+					tool = {type: 'MeasureLine'};
 					AdmClient.app.config.tools.push(tool);
 				}
-			}
-		}
-		else{
-			if (/SelectGeometry/.test(toolObject.toolName)){
-				
+			} else {
 				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
 					tool = AdmClient.app.config.tools[i];
-					if (/SelectGeometry/.test(tool.type)){
+					if ((/MeasureLine/.test(tool.type)) || (/MeasureLine/.test(tool))) {
 						AdmClient.app.config.tools.splice(i, 1);
 					}
 				}
 			}
+			this.getToolsGrid().store.commitChanges();
 		}
-		
-		this.getToolsGrid().store.commitChanges();
 	}
 });
 
@@ -4302,81 +4527,190 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
-* A model that represents the configuration - obselete. 
+* A controller to handle tooldetails for measure area tool.
 */
 
-Ext.define('AdmClient.model.Config', {
-	mixins : {
-		observable :  Ext.util.Observable 
+Ext.define('AdmClient.controller.toolDetails.MeasureArea', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
 	},
 	
-	setId : function(configId){
-		this.configId = configId;
-	},
-	
-	setName : function(name){
-		this.name = name;
-	},
-	
-	setMaxExtent : function(maxExtent){
-		this.maxExtent = maxExtent;
-	},
-	
-	setExtent : function(extent){
-		this.extent = extent;
-	},
-	
-	setAttribution : function(attribution){
-		this.attribution = attribution;
-	},
-	
-	setDrawStyle : function(drawStyle){
-		this.drawStyle = drawStyle;
-	},
-	
-	setTools : function(tools){
-		this.tools = tools;
-	},
-	
-	setLayers : function(layers){
-		this.layers = layers;
-	},
-	
-	setVersion : function(version){
-		this.version = version;
-	},
-	
-	setAutoClearDrawLayer : function(autoClearDrawLayer){
-		this.autoClearDrawLayer = autoClearDrawLayer;
-	},
-	
-	getConfig : function(){
-		var config = {};
-		config.configId = this.configId;
-		config.name = this.name;
-		config.maxExtent = this.maxExtent;
-		config.extent = this.extent;
-		config.attribution = this.attribution;
-		config.drawStyle = this.drawStyle;
-		config.tools = this.drawStyle;
-		config.layers = this.layers;
-		config.version = this.version;
-		config.autoClearDrawLayer = this.autoClearDrawLayer;
-		return config;
-	},
-	
-	loadConfig : function(config){
-		for (var k in config){
-			this[k] = config[k];
-		}
-	},
-	
-	constructor : function(config){
-		this.mixins.observable.constructor.call(this, config);
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
 		
-		this.addEvents(
-				'updatedConfig'
-		);
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/MeasureArea/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'Identify' || t.tool === 'Identify');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'MeasureArea'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if ((/MeasureArea/.test(tool.type)) || (/MeasureArea/.test(tool))) {
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for delete measure tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.DeleteMeasure', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
+		var tool = null;
+		if (/DeleteMeasure/.test(toolObject.toolName)){
+			if (checked){
+				//find the right place in config object
+				var configItems = AdmClient.app.config.tools.filter(function(t){
+					return (t === 'DeleteMeasure' || t.tool === 'DeleteMeasure');
+				});
+				
+				if (configItems.length === 0){ // add tool to config object
+					tool = {type: 'DeleteMeasure'};
+					AdmClient.app.config.tools.push(tool);
+				}
+			} else {
+				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+					tool = AdmClient.app.config.tools[i];
+					if (/DeleteMeasure/.test(tool) || /DeleteMeasure/.test(tool.type)){
+						AdmClient.app.config.tools.splice(i, 1);
+					}
+				}
+			}
+			this.getToolsGrid().store.commitChanges();
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle layer details view.
+*/
+
+Ext.define('AdmClient.controller.LayerDetails', {
+	extend:  Ext.app.Controller ,
+	                                                                   
+	refs : [{
+		ref : 'saveLayerDetail',
+		selector : '#saveLayerDetail'
+	},{
+		ref: 'layerDetailsGrid',
+		selector: '#layerDetailsGrid'
+	},{
+		ref: 'layerDetails',
+		selector: 'layerDetails'
+	}],
+
+	init : function() {
+		this.control({
+			'#saveLayerDetail' : {
+				click : this.save
+			}
+		});
+	},
+
+	save : function(btn, e, eOpts){
+		var store = this.getLayerDetailsGrid().getStore();
+		var layer = this.getLayerDetails().layer;
+		layer.metadata = {};
+		store.data.items.forEach(function(c){
+			if (c.data.visible || c.data.alias){
+				if (c.data.alias === "") return;
+				if (!layer.metadata.attributes){
+					layer.metadata.attributes = {};
+				}
+				layer.metadata.attributes[c.data.name] = {alias : c.data.alias};
+			}
+		});
+
+		if (Object.keys(layer.metadata).length === 0){
+			delete layer.metadata;
+		}
+
+		store = this.getLayerDetails().panelGrid.store;
+		AdmClient.app.config.layers = store.treeStore.getLayerConfiguration();
+
+		this.getLayerDetails().close();
 	}
 });
 
@@ -4463,6 +4797,108 @@ Copyright Härnösands kommun(C) 2014
  */
 
 
+/*
+* A model store for det grouped Servers. 
+*/
+
+
+Ext.define('AdmClient.store.Servers', {
+	extend :  Ext.data.Store ,
+	                                      
+	model : 'AdmClient.model.Server',
+	storeId: 'servers',
+	autoLoad : true
+});
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/*
+* A model store for det grouped ToolStore.
+* To add a tool, add it to the data section 
+*/
+
+Ext.define('AdmClient.store.ToolStore', {
+	extend :  Ext.data.ArrayStore ,
+
+	fields : [ {
+		name : 'toolName',
+		type : 'string'
+	},{
+		name : 'tool',
+		type : 'string'
+	}, {
+		name : 'info',
+		type : 'string'
+	},{
+		name : 'selected'
+	} ],
+
+	data : [ [ 'DrawGeometry', 'Point', 'Draw point', false ],
+	         [ 'DrawGeometry', 'Path', 'Draw line', false ],
+	         [ 'DrawGeometry', 'Polygon', 'Draw polygon.', false ],
+	         [ 'DrawGeometry', 'Text', 'Draw text.', false ],
+	         [ 'DrawObject', 'Rectangle', 'Draw rectangular object.', false ],
+	         [ 'DrawObject', 'Octagon', 'Draw octagonal object.', false ],
+	         [ 'DrawObject', 'L-shape', 'Draw L-shaped object.', false ],
+	         [ 'DrawObject', 'D-shape', 'Draw D-shaped object.', false ],
+			[ 'SelectGeometry', 'Select geometry', 'Tool for selecting geometry.', false ],
+			[ 'ModifyGeometry', 'Modify geometry', 'Tool for modify geometry.', false ],
+			[ 'DeleteGeometry', 'Delete geometry', 'Tool for delete single geometry.', false ],
+			[ 'DeleteAllFeatures', 'Delete all geometries', 'Tool for delete all geometries on map.', false ],
+			[ 'FullExtent', 'Full extent', 'Zoom to full extent.', false ],
+			[ 'ZoomSelector', 'Zoom to scale', 'Zoom to scale.', false ],
+			[ 'Print', 'Print', 'Tool for printing.', false ],
+			[ 'Identify', 'Identify', 'Identify features.', false ],
+			[ 'Popup', 'Popup', 'Tool to show popup window for features in popup layers.', false ],
+			[ 'DetailReport', 'Detail report', 'Tool for detail report.', false],
+			[ 'MeasureArea', 'Measure area', 'Measure area in 2D.', false ],
+			[ 'MeasureLine', 'Measure line', 'Measure line in 2D.', false ],
+			[ 'DeleteMeasure', 'Delete measure', 'Tool for delete measure.', false]
+			//[ 'A', 'Detail report', 'Tool for detail report.', false]
+	]
+	
+});
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
 /**
 * A model that represents the search server. 
 */
@@ -4503,48 +4939,15 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
-* A model that represents the server. 
+* A model store for det grouped SearchServer. 
 */
-Ext.define('AdmClient.model.Server', {
-	                                           
-	extend :  AdmClient.model.SettingBase ,
-
-	proxy : {
-		type : 'rest',
-		url : appPath + '/settings/servers',
-		reader : {
-			type : 'json'
-		}
-	}
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
 
 
-/**
-* A model store for det grouped LayerDetails. 
-*/
-Ext.define('AdmClient.store.LayerDetails', {
-    extend:  GeoExt.data.AttributeStore 
+Ext.define('AdmClient.store.SearchServer', {
+	extend :  Ext.data.Store ,
+	                                            
+	model : 'AdmClient.model.SearchServer',
+	autoLoad : true
 });
 
 /*
@@ -4620,140 +5023,6 @@ Copyright Härnösands kommun(C) 2014
  */
 
 
-/**
-* A model store for det grouped SearchServer. 
-*/
-
-
-Ext.define('AdmClient.store.SearchServer', {
-	extend :  Ext.data.Store ,
-	                                            
-	model : 'AdmClient.model.SearchServer',
-	autoLoad : true
-});
-
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/*
-* A model store for det grouped Servers. 
-*/
-
-
-Ext.define('AdmClient.store.Servers', {
-	extend :  Ext.data.Store ,
-	                                      
-	model : 'AdmClient.model.Server',
-	storeId: 'servers',
-	autoLoad : true
-});
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-/*
-* A model store for det grouped ToolStore.
-* To add a tool, add it to the data section 
-*/
-
-Ext.define('AdmClient.store.ToolStore', {
-	extend :  Ext.data.ArrayStore ,
-
-	fields : [ {
-		name : 'toolName',
-		type : 'string'
-	},{
-		name : 'tool',
-		type : 'string'
-	}, {
-		name : 'info',
-		type : 'string'
-	},{
-		name : 'selected'
-	} ],
-
-	data : [ [ 'DrawGeometry', 'Point', 'Action for add point.', false ],
-	         [ 'DrawGeometry', 'Path', 'Action for draw line tool.', false ],
-	         [ 'DrawGeometry', 'Polygon', 'Action for draw polygon tool.', false ],
-			[ 'DeleteGeometry', 'Delete geometry', 'Tool for delete geometry.', false ],
-			[ 'DeleteAllFeatures', 'Delete all geometry', 'Tool for delete all geometries on map.', false ],
-			[ 'FullExtent', 'Full extent', 'Zoom to full extent.', false ],
-			[ 'Identify', 'Identify', 'Identify features.', false ],
-			[ 'MeasureArea', 'Measure area', 'Measure area in 2D.', false ],
-			[ 'MeasureLine', 'Measure line', 'Measure line in 2D.', false ],
-			[ 'DeleteMeasure', 'Delete measure', 'Tool for delete measure.', false],
-			[ 'Print', 'Print', 'Tool for printing.', false ],
-			[ 'ModifyGeometry', 'Modify geometry', 'Tool for modify geometry.', false ],
-			[ 'DetailReport', 'Detail report', 'Tool for detail report.', false]
-			//[ 'A', 'Detail report', 'Tool for detail report.', false]
-	]
-	
-});
-Ext.define('AdmClient.store.WmsCapabilitiesLayerStore',{
-    extend:  Ext.data.JsonStore ,
-                                                     
-    model: 'GeoExt.data.WmsCapabilitiesLayerModel',
-    alias: 'widget.wmsCapabilities'
-});
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
 /*
 * A model store for det WmsCapabilitiesLayerTree. 
 */
@@ -4767,108 +5036,6 @@ Ext.define('AdmClient.store.WmsCapabilitiesLayerTree',{
 
     defaultRootProperty: 'layers'
 });
-/*
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-    All rights reserved. This program and the accompanying materials
-    are made available under the terms of the GNU Affero General Public License
-    which accompanies this distribution, and is available at
-    http://www.gnu.org/licenses/agpl-3.0.html
- */
-
-
-
-/**
-* Main settings view for the application
-*/
-Ext.define('AdmClient.view.Settings', {
-	extend :  Ext.panel.Panel ,
-	                                                                                                        
-	alias : 'widget.settings',
-	title : 'Settings',
-	layout: 'fit',
-	initComponent : function() {
-		this.items = [ {
-			xtype : 'tabpanel',
-			items : [ {
-				margin : 8,
-				title : 'Servers',
-				border : true,
-				items : [ {
-					xtype : 'gisServersGrid',
-					margin : 8,
-					store : new AdmClient.store.Servers(),
-					itemId : 'srvGrid',
-					title : 'GIS-Servers',
-					border : true
-				}, {
-					xtype : 'settingsGridBase',
-					margin : 8,
-					store : new AdmClient.store.SearchServer(),
-					itemId : 'searchGrid',
-					title : 'Geosearch',
-					border : true
-				} ]
-			},{
-				xtype : 'layers'
-			} ]
-
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
- * About window
- */
-Ext.define('AdmClient.view.about.About',{
-	extend :  Ext.window.Window ,
-	alias : 'widget.admAbout',
-	
-	initComponent : function(){
-		Ext.applyIf(this, {
-			title : 'About',
-			width : 600,
-			height : 400,
-			html : '<center>About</center>'
-		});
-		this.callParent(arguments);
-	}
-});
-
 /******************************************************************************
 Copyright Härnösands kommun(C) 2014 
 
@@ -4932,59 +5099,6 @@ Copyright Härnösands kommun(C) 2014
  ******************************************************************************/
 
 /**
- * Map extent
- */
-Ext.define('AdmClient.view.mapconfiguration.map.Extent', {
-	extend :  Ext.panel.Panel ,
-	alias : 'widget.extent',
-
-	initComponent : function() {
-		this.items = [ {
-			title : 'Map extent',
-			layout : 'fit',
-			border : false,
-			itemId : 'mapPanel',
-			margin : 12,
-			tbar : [ {
-				xtype : 'button',
-				itemId : 'pan',
-				icon : 'resources/images/arrow-move.png',
-				enableToggle : true,
-				pressed : true
-
-			}, {
-				xtype : 'button',
-				itemId : 'markExtent',
-				icon : 'resources/images/figur-R.png',
-				enableToggle : true
-			} ]
-		} ];
-		this.callParent(arguments);
-	}
-});
-
-/******************************************************************************
-Copyright Härnösands kommun(C) 2014 
-
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the GNU Affero General Public License
- * which accompanies this distribution, and is available at
- * http://www.gnu.org/licenses/agpl-3.0.html
- ******************************************************************************/
-
-/**
  * Tools grid
  *
  *{@img tools.png}
@@ -5018,6 +5132,69 @@ Ext.define('AdmClient.view.mapconfiguration.tools.ToolsGrid', {
 
 		this.store = new AdmClient.store.ToolStore();
 
+		this.callParent(arguments);
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+
+/**
+* Main settings view for the application
+*/
+Ext.define('AdmClient.view.Settings', {
+	extend :  Ext.panel.Panel ,
+	                                                                                                        
+	alias : 'widget.settings',
+	title : 'Settings',
+	layout: 'fit',
+	initComponent : function() {
+		this.items = [ {
+			xtype : 'tabpanel',
+			items : [ {
+				margin : 8,
+				title : 'Servers',
+				border : true,
+				items : [ {
+					xtype : 'gisServersGrid',
+					margin : 8,
+					store : new AdmClient.store.Servers(),
+					itemId : 'srvGrid',
+					title : 'GIS-Servers',
+					border : true
+				}, {
+					xtype : 'settingsGridBase',
+					margin : 8,
+					store : new AdmClient.store.SearchServer(),
+					itemId : 'searchGrid',
+					title : 'Geosearch',
+					border : true
+				} ]
+			},{
+				xtype : 'layers'
+			} ]
+
+		} ];
 		this.callParent(arguments);
 	}
 });
@@ -5190,6 +5367,432 @@ Ext.define('AdmClient.view.settings.SearchServersGrid', {
 	
 	initComponent : function(){
 		
+		this.callParent(arguments);
+	}
+});
+
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * About window
+ */
+Ext.define('AdmClient.view.about.About',{
+	extend :  Ext.window.Window ,
+	alias : 'widget.admAbout',
+	
+	initComponent : function(){
+		Ext.applyIf(this, {
+			title : 'About',
+			width : 600,
+			height : 400,
+			html : '<center>About</center>'
+		});
+		this.callParent(arguments);
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A model that represents the configuration - obselete. 
+*/
+
+Ext.define('AdmClient.model.Config', {
+	mixins : {
+		observable :  Ext.util.Observable 
+	},
+	
+	setId : function(configId){
+		this.configId = configId;
+	},
+	
+	setName : function(name){
+		this.name = name;
+	},
+	
+	setMaxExtent : function(maxExtent){
+		this.maxExtent = maxExtent;
+	},
+	
+	setExtent : function(extent){
+		this.extent = extent;
+	},
+	
+	setAttribution : function(attribution){
+		this.attribution = attribution;
+	},
+	
+	setDrawStyle : function(drawStyle){
+		this.drawStyle = drawStyle;
+	},
+	
+	setTools : function(tools){
+		this.tools = tools;
+	},
+	
+	setLayers : function(layers){
+		this.layers = layers;
+	},
+	
+	setVersion : function(version){
+		this.version = version;
+	},
+	
+	setAutoClearDrawLayer : function(autoClearDrawLayer){
+		this.autoClearDrawLayer = autoClearDrawLayer;
+	},
+	
+	getConfig : function(){
+		var config = {};
+		config.configId = this.configId;
+		config.name = this.name;
+		config.maxExtent = this.maxExtent;
+		config.extent = this.extent;
+		config.attribution = this.attribution;
+		config.drawStyle = this.drawStyle;
+		config.tools = this.drawStyle;
+		config.layers = this.layers;
+		config.version = this.version;
+		config.autoClearDrawLayer = this.autoClearDrawLayer;
+		return config;
+	},
+	
+	loadConfig : function(config){
+		for (var k in config){
+			this[k] = config[k];
+		}
+	},
+	
+	constructor : function(config){
+		this.mixins.observable.constructor.call(this, config);
+		
+		this.addEvents(
+				'updatedConfig'
+		);
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+/**
+ * @class AdmClient
+ * Main class in the app.
+ * @singleton
+ * {@img app.png alt app image}
+ *
+ * This adminstration tool is build on top of ExtJS. It uses a MVC pattern from Sencha. More
+ * information can be found [here](http://docs.sencha.com/extjs/4.2.2/#!/guide/application_architecture)
+ * 
+ * To add tools or search items, add a row to the corresponding Array store. 
+ * 
+ * For tools a details part must be added in the controller.
+ *
+ * In general No ID's are being used to identify components. Instead the application uses ItemID to avoid 
+ * ID collisions. 
+ *
+ */
+Ext.application({
+	                                     
+	                                       
+	                                              
+	                                                   
+	                                          
+	                                            
+	                                         
+	                                         
+	                                             
+	                                               
+	                                                        
+	                                                       
+	                                                          
+	                                                       
+	                                                            
+	                                                          
+	                                                          
+	                                                          
+	                                                             
+	                                                             
+	                                                             
+	                                                                
+	                                                         
+	                                                           
+	                                                    
+	                                                       
+	                                                    
+	                                                           
+	                                                          
+	                                                          
+	                                                            
+	                                               
+	           
+	                                     
+	                                       
+	                                    
+	                                          
+	                                            
+	                                                      
+	           
+	                                             
+	                                 
+	                                                             
+	                                                                   
+	                                                                        
+                                                                            
+                                                                        
+                                                                        
+                                                                      
+                                                                         
+                                                                         
+                                                                   
+                                                                            
+                                                              
+                                                                  
+               
+                                                                  
+               
+                                                 
+                                         
+                                                          
+                                                        
+                                                           
+                                                
+                                            
+
+                                        
+                                             
+                                              
+                                       
+                                        
+               
+                                
+                 
+    name: 'AdmClient',
+    appFolder: 'src/main/javascript/',
+    controllers: ['Main', 
+                  'Layers', 
+                  'MainToolbar', 
+                  'Servers', 
+                  'MapConfiguration', 
+                  'ToolsGrid', 
+                  'Layers', 
+                  'Search', 
+                  'PreviewMap', 
+                  'ConfigLayers',
+                  'LayerDetails',
+                  'toolDetails.DrawPoint', 
+                  'toolDetails.DrawPath',
+                  'toolDetails.DrawPolygon',
+                  'toolDetails.DrawText',
+                  'toolDetails.DrawRectangle',
+                  'toolDetails.DrawOctagon',
+                  'toolDetails.DrawL-shape',
+                  'toolDetails.DrawD-shape',
+                  'toolDetails.DeleteGeometry',
+                  'toolDetails.ModifyGeometry',
+                  'toolDetails.SelectGeometry',
+                  'toolDetails.DeleteAllFeatures',
+                  'toolDetails.FullExtent',
+                  'toolDetails.ZoomSelector',
+                  'toolDetails.Print',
+                  'toolDetails.Identify',
+                  'toolDetails.Popup',
+                  'toolDetails.DetailReport',
+                  'toolDetails.MeasureLine',
+                  'toolDetails.MeasureArea',
+                  'toolDetails.DeleteMeasure'
+                ],
+    models : ['SettingBase','Server', 'SearchServer', 'Layer', 'Config'],
+    launch: function() {
+    	this.config = Ext.create('AdmClient.model.Config');
+      	this.admClient =  Ext.create('Ext.container.Container', {
+        	layout: 'border',
+          	renderTo: 'contentitem',
+        	height : (window.innerHeight - 70),
+        	items : [{xtype: 'main'}]
+        });
+    }
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A model that represents the server. 
+*/
+Ext.define('AdmClient.model.Server', {
+	                                           
+	extend :  AdmClient.model.SettingBase ,
+
+	proxy : {
+		type : 'rest',
+		url : appPath + '/settings/servers',
+		reader : {
+			type : 'json'
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A model store for det grouped LayerDetails. 
+*/
+Ext.define('AdmClient.store.LayerDetails', {
+    extend:  GeoExt.data.AttributeStore 
+});
+
+Ext.define('AdmClient.store.WmsCapabilitiesLayerStore',{
+    extend:  Ext.data.JsonStore ,
+                                                     
+    model: 'GeoExt.data.WmsCapabilitiesLayerModel',
+    alias: 'widget.wmsCapabilities'
+});
+/******************************************************************************
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Affero General Public License
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/agpl-3.0.html
+ ******************************************************************************/
+
+/**
+ * Map extent
+ */
+Ext.define('AdmClient.view.mapconfiguration.map.Extent', {
+	extend :  Ext.panel.Panel ,
+	alias : 'widget.extent',
+
+	initComponent : function() {
+		this.items = [ {
+			title : 'Map extent',
+			layout : 'fit',
+			border : false,
+			itemId : 'mapPanel',
+			margin : 12,
+			tbar : [ {
+				xtype : 'button',
+				itemId : 'pan',
+				icon : 'resources/images/arrow-move.png',
+				enableToggle : true,
+				pressed : true
+
+			}, {
+				xtype : 'button',
+				itemId : 'markExtent',
+				icon : 'resources/images/figur-R.png',
+				enableToggle : true
+			} ]
+		} ];
 		this.callParent(arguments);
 	}
 });

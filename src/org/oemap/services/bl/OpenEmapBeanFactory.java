@@ -36,18 +36,27 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.ObjectWriter;
+import org.codehaus.jackson.map.ser.FilterProvider;
+import org.codehaus.jackson.map.ser.impl.SimpleBeanPropertyFilter;
+import org.codehaus.jackson.map.ser.impl.SimpleFilterProvider;
 import org.codehaus.jackson.node.ObjectNode;
 import org.oemap.services.beans.RestResponseObject;
 
 public class OpenEmapBeanFactory<T> {
 
 	private ObjectMapper mapper;
+	private ObjectWriter filteredWriter;
 	private RestResponseObject response;
 
 	public OpenEmapBeanFactory() throws InstantiationException,
 			IllegalAccessException {
 		mapper = new ObjectMapper();
 		response = new RestResponseObject();
+		
+		FilterProvider filters = new SimpleFilterProvider().addFilter("listFilter",
+		SimpleBeanPropertyFilter.filterOutAllExcept("username", "isPublic", "configid", "name"));
+		filteredWriter = mapper.writer(filters);
 	};
 
 	public void setRestResponseObject(boolean success, Integer id,
@@ -145,9 +154,7 @@ public class OpenEmapBeanFactory<T> {
 
 	public String createConfigListJSON(List<T> configs) throws JsonGenerationException,
 			JsonMappingException, IOException {
-		// TODO - Filter the parts that should be included in JSON response
-		// name, configId, username, isPublic
-		return this.mapper.writeValueAsString(configs);
+		return filteredWriter.writeValueAsString(configs);
 	}
 	
 	public String createJSON(List<T> beans) throws JsonGenerationException,

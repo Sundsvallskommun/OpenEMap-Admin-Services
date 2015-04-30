@@ -25,13 +25,15 @@ import java.io.IOException;
 
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.annotate.JsonFilter;
 
 import se.unlogic.standardutils.dao.annotations.DAOManaged;
 import se.unlogic.standardutils.dao.annotations.Key;
 import se.unlogic.standardutils.dao.annotations.Table;
 import se.unlogic.standardutils.xml.XMLElement;
 
-@Table(name = "oemapadmin_config")
+@Table(name = "oemapadmin_config") 
+@JsonFilter("listFilter")
 public class Config extends ConfigBase {
 
 	@XMLElement

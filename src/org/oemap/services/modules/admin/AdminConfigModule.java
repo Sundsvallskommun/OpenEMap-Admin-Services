@@ -36,6 +36,7 @@ import org.oemap.services.exceptions.InvalidUserException;
 import org.oemap.services.exceptions.WriteprotectedException;
 import org.oemap.services.modules.responsehandler.StringResponseHandler;
 
+import se.unlogic.hierarchy.core.annotations.WebPublic;
 import se.unlogic.hierarchy.core.beans.User;
 import se.unlogic.hierarchy.core.interfaces.ForegroundModuleDescriptor;
 import se.unlogic.hierarchy.core.interfaces.SectionInterface;
@@ -101,6 +102,30 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
 //		String json = configFactory.createConfigListJSON(filteredConfigs);
 		String json = configFactory.createJSON(filteredConfigs);
+		HTTPUtils.sendReponse(json, res);
+		return null;
+	};
+
+	@WebPublic(alias = "configlist")
+	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse getConfigList(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
+		List<Config> configs = configDAO.getAll();
+		List<Config> filteredConfigs = new ArrayList<Config>();
+		
+		for (Config config : configs){
+			String configName = config.getName();
+			if (configName.equalsIgnoreCase("default")) 
+				continue;
+			
+			if (config.getUsername().equalsIgnoreCase(user.getUsername())){
+				filteredConfigs.add(config);
+			}
+			else if (config.getIsPublic()){
+				filteredConfigs.add(config);
+			}
+		}
+		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
+		String json = configFactory.createConfigListJSON(filteredConfigs);
+//		String json = configFactory.createJSON(filteredConfigs);
 		HTTPUtils.sendReponse(json, res);
 		return null;
 	};
