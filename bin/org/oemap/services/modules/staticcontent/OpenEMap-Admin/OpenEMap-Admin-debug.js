@@ -334,6 +334,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 	title : 'Lager inst&auml;llningar',
 	width : 600,
 	height : 400,
+	defaultAlign: 'c',
 
 	constructor : function(){
 		this.layer = arguments[0].selectedLayer;
@@ -373,9 +374,6 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 	initComponent : function() {
 
 		var self = this;
-		this.x = Math.ceil(window.innerWidth / 2 - this.innerWidth / 2);
-		this.y = Math.ceil(window.innerHeight / 2 - this.innerHeight / 2);
-
 		this.modal = true;
 		
 		if (this.layer.wfs){
@@ -393,10 +391,10 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 					
 			};
 			
-			var wfsUrl = 'adminproxy?url=' + wfsServer + '?service=wfs&request=DescribeFeatureType&version=1.0.0&typeName=' + getTypeName(this.layer);
+			var wfsUrl = proxyUrl + wfsServer + '?service=wfs&request=DescribeFeatureType&version=1.0.0&typeName=' + getTypeName(this.layer);
 			this.store = Ext.create('GeoExt.data.AttributeStore');
 			var proxy = this.store.getProxy();
-			Ext.apply(proxy.proxyConfig, {headers: {"Content-Type": "application/xml; charset=UTF-8"}});
+//			Ext.apply(proxy.proxyConfig, {headers: {"Content-Type": "application/xml; charset=UTF-8"}});
 			this.store.setUrl(wfsUrl);
 			this.store.load();
 		}
@@ -442,32 +440,40 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 	                        records.forEach(function(record) {
                             	var boundaryBox = record.get('bbox');
 								var success = function(){
-									var format = new OpenLayers.Format.GML();
-									var feature = format.read(arguments[0].responseXML);
-									var fields = this.getAttributeCollection(feature[0].attributes);
-									
-
-									if (this.layer.metadata && this.layer.metadata.attributes && this.layer.metadata.attributes instanceof Object) {
-										var attributesInLayer = this.layer.metadata.attributes;
-										var fieldsFilter = function(f){
-											return f[0] === attribute;
-										};
-										for (var attribute in attributesInLayer){
-											var item = fields.filter(fieldsFilter, f);
-											if (item.length > 0) {
-												item[0][1] = item[0][1] === '' ? attributesInLayer[attribute].alias : item[0][1];
-												item[0][2] = true;
+									if (arguments[0].responseXML) {
+										var format = new OpenLayers.Format.GML();
+										var feature = format.read(arguments[0].responseXML);
+										var fields = this.getAttributeCollection(feature[0].attributes);
+										
+	
+										if (this.layer.metadata && this.layer.metadata.attributes && this.layer.metadata.attributes instanceof Object) {
+											var attributesInLayer = this.layer.metadata.attributes;
+											var fieldsFilter = function(f){
+												return f[0] === attribute;
+											};
+											for (var attribute in attributesInLayer){
+												var item = fields.filter(fieldsFilter, f);
+												if (item.length > 0) {
+													item[0][1] = item[0][1] === '' ? attributesInLayer[attribute].alias : item[0][1];
+													item[0][2] = true;
+												}
 											}
 										}
+										this.store.loadData(fields);
+									} else {
+										this.close();
+										Ext.Error.raise({
+											title: 'Kommunikationsproblem',
+											msg: 'Kan inte hämta information om lagret'
+										});
 									}
-									this.store.loadData(fields);
 								};
 
                             	for (var srsName in boundaryBox){
                             		var boundary = boundaryBox[srsName].bbox;
                             		var extent = new OpenLayers.Bounds.fromArray(boundary);
 
-                            		var requestUrl = 'adminproxy?url=' + wmsServer + '?' + 'request=GetFeatureInfo&service=WMS&version=1.1.1&layers=' + layerName + '&styles=&srs=' + srsName + '&bbox=' + extent.toString() + 
+                            		var requestUrl = proxyUrl + wmsServer + '?' + 'request=GetFeatureInfo&service=WMS&version=1.1.1&layers=' + layerName + '&styles=&srs=' + srsName + '&bbox=' + extent.toString() + 
                             		 	'&width=1&height=1&query_layers=' + layerName + '&info_format=application/vnd.ogc.gml&feature_count=1&x=0&y=0';
                             		Ext.Ajax.request({
                             		 	scope: this,
@@ -493,13 +499,20 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 		}
 		if (this.store){
 			this.store.addListener('load', function(store, records, successful, eOpts){
-				records.forEach(function(l){
-					if (self.layer.metadata && self.layer.metadata.attributes && self.layer.metadata.attributes[l.data.name] instanceof Object){
-						l.data.alias = self.layer.metadata.attributes[l.data.name].alias;
-						l.data.visible = true;
-					}
-				});
-				store.update();
+				if (successful) {
+					records.forEach(function(l){
+						if (self.layer.metadata && self.layer.metadata.attributes && self.layer.metadata.attributes[l.data.name] instanceof Object){
+							l.data.alias = self.layer.metadata.attributes[l.data.name].alias;
+							l.data.visible = true;
+						}
+					});
+					store.update();
+				} else {
+                	Ext.Error.raise({
+                        msg: 'Cant get metadata for layer',
+                        option: this
+                    });	            
+				}
 			});
 		}
 
@@ -556,7 +569,6 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 			}
 			]
 		}],
-
 		this.callParent(arguments);
 	}
 });
@@ -716,7 +728,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerPanel', {
 		        tbar : [{
 		        	text : 'Nytt grupplager',
 		        	itemId : 'newGroupLayer',
-		        	icon : 'resources/font-awesome/black/png/16/plus.png'
+		        	icon : imageBasePath + 'resources/font-awesome/black/png/16/plus.png'
 		    	}],
 		        columns: [
 		            {
@@ -730,7 +742,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerPanel', {
 		                width: 70,
 		                text: '&Auml;ndra <br /> lagernamn',
 		                align: 'center',
-		                icon: 'resources/font-awesome/black/png/16/pencil.png',
+		                icon: imageBasePath + 'resources/font-awesome/black/png/16/pencil.png',
 		                tooltip: '&Auml;ndra namn',
 		                handler: function(grid, rowIndex, colIndex) {
 		                	var node = grid.getStore().getAt(rowIndex);
@@ -794,7 +806,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerPanel', {
 		                width: 70,
 		                text: 'Ta bort',
 		                align: 'center',
-		                icon: 'resources/font-awesome/black/png/16/times.png',
+		                icon: imageBasePath + 'resources/font-awesome/black/png/16/times.png',
 		                tooltip: 'Ta bort',
 		                handler: function(grid, rowIndex, colIndex) {
 		                	var node = grid.getStore().getAt(rowIndex);
@@ -813,18 +825,27 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerPanel', {
 		            	isDisabled: function(view, ri, ci, item, record){
 		            		return record.data.isGroupLayer;
 		            	},
-		            	//icon: 'resources/font-awesome/black/png/16/table.png',
+		            	//icon: imageBasePath + 'resources/font-awesome/black/png/16/table.png',
 		            	renderer:function(value, meta){
 		            		if (!meta.record.get('queryable')){
 		            			return '<span></span>';
 		            		}
-		            		return '<img role="button" class="x-action-col-icon x-action-col-0" src="resources/font-awesome/black/png/16/table.png" />';
+		            		return '<img role="button" class="x-action-col-icon x-action-col-0" src="' + imageBasePath + 'resources/font-awesome/black/png/16/table.png" />';
 		            	},
 		            	handler : function(grid, rowIdex, colIndex){
 		            		var selectedLayer = null;
 		            		if (grid.getStore().data.items[rowIdex].childNodes.length === 0){
 		            				selectedLayer = grid.getStore().data.items[rowIdex].data;
 		            		}
+		            		Ext.Error.handle = function(error) {
+								Ext.Msg.show({
+									title: error.title || 'Fel',
+									msg: error.msg || 'Odefinierat fel',
+									buttons: Ext.Msg.OK,
+									icon: Ext.Msg.WARNING
+								});
+								// TODO - close window
+		            		};
 		            		Ext.create('AdmClient.view.mapconfiguration.layer.LayerDetails',{
 		            			selectedLayer : selectedLayer, grid: grid
 		            		}).show();
@@ -1795,22 +1816,10 @@ Ext.define('AdmClient.controller.ToolsGrid', {
 			var toolName = panel.store.data.items[i];
 			for (var j = 0; j < AdmClient.app.config.tools.length; j++){
 				var configTool = AdmClient.app.config.tools[j];
-				if (configTool.constructor === String){
-					if (configTool === toolName.data.toolName){
-						toolName.data.selected = true;
-						toolName.save();
-					}
-				} else if (configTool.type === toolName.data.toolName){
-					if (configTool.geometry && configTool.geometry === toolName.data.tool){
-						toolName.data.selected = true;
-					} else if(configTool.geometry && configTool.geometry !== toolName.data.tool){
-						continue;
-					} 
-					else if(configTool.type && toolName.data.toolName){
-						toolName.data.selected = true;
-					}
-					toolName.save();
-				}
+				if (configTool.id === toolName.data.id) {
+					toolName.data.selected = true;
+				} 
+				toolName.save();
 			}
 		}
 		panel.updateLayout();
@@ -2579,12 +2588,14 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
     * @param {Ext.data.Model} refNode
     */
     onBeforeInsertAppend: function(store, node, refNode) {
-    	var layerName = this.getLayerName(node.data);
+/*    	var layerName = this.getLayerName(node.data);
         if ((node.$className === 'GeoExt.data.WmsCapabilitiesLayerModel' && (!node.data.wms && node.raw && node.raw.url && layerName)) || node.$className === 'AdmClient.model.Layer') {
         	return true;
         } else {
         	return false;
         }
+*/
+		return true;
     },
 
     /**
@@ -2600,36 +2611,56 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
 	},
 
 	onInsertAndAppend: function(store, node) {
-    	// Check if it is possible to do a Wfs call, and create WFS-tag and metadata and set queryable 
-        if (node.$className === 'GeoExt.data.WmsCapabilitiesLayerModel') {
-        	var layerName = this.getLayerName(node.data);
-        	
-        	if (!node.data.wms && node.raw && node.raw.url && layerName) {
-            	var wms = {url: node.raw.url, options: {displayInLayerSwitcher: true, isBaseLayer: false}};
-    			if (node.raw.params) {
-    				wms.params = node.raw.params; 
-    			} else {
-    				wms.params = {layers: layerName};
-    			}
-    			if (node.raw.metadata && node.raw.metadata.legendURL) {
-    				wms.options.legendURL = node.raw.metadata.legendURL; 
-    			}
-    			if (node.raw.metadata && node.raw.metadata.metadataURLs && node.raw.metadata.metadataURLs.length > 0) {
-    				wms.metadataURL = node.raw.metadata.metadataURLs[0]; 
-    			}
-    			node.set('wms', wms);
-    			
-    			if (node.raw.metadata && node.raw.metadata.queryable) {
-    				node.set('queryable', node.raw.metadata.queryable); 
-    			}
-    	    	node.set('isGroupLayer', false);
-    	    	node.set('clickable', false);
-    	    	this.getWFSSettings(node);
-        	}
-//        } else if (node.$className === 'AdmClient.model.Layer') {
-			console.log('onInsertAndAppend');
-        	console.log(node);
-        }
+		if(!this._inserting) {
+			this._inserting = true; 
+	        if (node.$className === 'GeoExt.data.WmsCapabilitiesLayerModel') {
+		    	node.set('allowDrag', true);
+	        	var layerName = this.getLayerName(node.data);
+	        	
+    			// Add this node layers and subnodes to map. 
+//				store.cascadeBy(function(node) {
+					
+			        if(node.raw && node.raw.CLASS_NAME && node.raw.CLASS_NAME.indexOf('OpenLayers.Layer') > -1) {
+		    			node.set('layer', node.raw);
+		
+						if (node.raw.CLASS_NAME.indexOf('OpenLayers.Layer.WMS') > -1) {
+			            	var wms = {url: node.raw.url, options: {displayInLayerSwitcher: true, isBaseLayer: false, visibility: true}};
+			    			if (node.raw.params) {
+			    				wms.params = node.raw.params; 
+			    			} else {
+			    				wms.params = {layers: layerName};
+			    			}
+			    			if (node.raw.metadata && node.raw.metadata.legendURL) {
+			    				wms.options.legendURL = node.raw.metadata.legendURL; 
+			    			}
+			    			if (node.raw.metadata && node.raw.metadata.metadataURLs && node.raw.metadata.metadataURLs.length > 0) {
+			    				wms.metadataURL = node.raw.metadata.metadataURLs[0]; 
+			    			}
+			    			node.set('wms', wms);
+			    		}
+		    			
+		    			if (node.raw.metadata && node.raw.metadata.queryable) {
+		    				node.set('queryable', node.raw.metadata.queryable); 
+		    			}
+		    	    	node.set('isGroupLayer', false);
+		    	    	node.set('clickable', false);
+		    	    	
+		    	    	// Add getLayer function to support GeoExt
+		    	    	var layer = node.get('layer');
+		    	    	node.getLayer = function() {
+		    	    		this.get('layer');
+		    	    	};
+		    	    	
+						// Add ´metadata and WFS info to node if it is queryable
+		    	    	this.getWFSSettings(node);
+		        	}
+//	        	});
+//	        } else if (node.$className === 'AdmClient.model.Layer') {
+//				console.log('onInsertAndAppend');
+//	        	console.log(node);
+	      }
+	      this._inserting = false;
+	    }
     },
     
     /**
@@ -3235,6 +3266,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawPoint', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DrawPoint',
+	config : {id: 'DrawPoint', type: 'DrawGeometry', iconCls : 'action-drawpoint', geometry : 'Point'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3244,28 +3277,9 @@ Ext.define('AdmClient.controller.toolDetails.DrawPoint', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Point/.test(toolObject.tool)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Point';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DrawGeometry', iconCls : 'action-drawpoint', geometry : 'Point'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DrawGeometry/.test(tool.type) && /Point/.test(tool.geometry)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3303,6 +3317,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawPath', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DrawLine',
+	config : {id: 'DrawLine', type: 'DrawGeometry', iconCls : 'action-drawline', geometry : 'Path'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3312,29 +3328,10 @@ Ext.define('AdmClient.controller.toolDetails.DrawPath', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Path/.test(toolObject.tool)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Path';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DrawGeometry', iconCls : 'action-drawline', geometry : 'Path'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DrawGeometry/.test(tool.type) && /Path/.test(tool.geometry)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
-		this.getToolsGrid().store.commitChanges();
 	}
 });
 
@@ -3371,6 +3368,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawPolygon', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DrawPolygon',
+	config: {id: 'DrawPolygon', type: 'DrawGeometry', iconCls : 'action-drawpolygon', geometry : 'Polygon'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3380,29 +3379,9 @@ Ext.define('AdmClient.controller.toolDetails.DrawPolygon', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Polygon/.test(toolObject.tool)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Polygon';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DrawGeometry', iconCls : 'action-drawpolygon', geometry : 'Polygon'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DrawGeometry/.test(tool.type) && /Polygon/.test(tool.geometry)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3440,6 +3419,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawText', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DrawText',
+	config : {id: 'DrawText', type: 'DrawGeometry', tooltip : 'Rita etikett', iconCls : 'action-drawpoint', geometry : 'Point', attributes: {type: 'label', label: 'Ny label', metadata: {type: {hidden: true}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3449,30 +3430,9 @@ Ext.define('AdmClient.controller.toolDetails.DrawText', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Text/.test(toolObject.tool)) {
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'Text' || t.tool === 'Text');
-				});
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DrawGeometry', tooltip : 'Rita etikett', iconCls : 'action-drawpoint', geometry : 'Point', attributes: {type: 'label', label: 'Ny label', metadata: {type: {hidden: true}}}};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				if (/Text/.test(toolObject.tool)){
-					for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-						tool = AdmClient.app.config.tools[i];
-						if ((/Point/.test(tool.geometry)) && tool.attributes && (/label/.test(tool.attributes.type))) {
-							AdmClient.app.config.tools.splice(i, 1);
-						}
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3510,6 +3470,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawRectangle', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DrawRectangle',
+	config : {id: 'DrawRectangle', type : 'DrawObject', itemId : 'DrawObjectR', tooltip : 'Rita rektangel', iconCls : 'action-draw-R', disable : false, obectConfig : {type : 'R'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3519,28 +3481,9 @@ Ext.define('AdmClient.controller.toolDetails.DrawRectangle', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Rectangle/.test(toolObject.tool)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Rectangle';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type : 'DrawObject', itemId : 'DrawObjectR', tooltip : 'Rita rektangel', iconCls : 'action-draw-R', disable : false, obectConfig : {type : 'R'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DrawObjectR/.test(tool.itemId)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3578,6 +3521,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawOctagon', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DrawOctagon',
+	config: {id: 'DrawOctagon', type : 'DrawObject', itemId : 'DrawObjectO', tooltip : 'Rita åttkantigt objekt', iconCls : 'action-draw-O', disable : false, obectConfig : {type : 'O'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3587,28 +3532,9 @@ Ext.define('AdmClient.controller.toolDetails.DrawOctagon', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Octagon/.test(toolObject.tool)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'Octagon';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type : 'DrawObject', itemId : 'DrawObjectO', tooltip : 'Rita åttkantigt objekt', iconCls : 'action-draw-O', disable : false, obectConfig : {type : 'O'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DrawObjectO/.test(tool.itemId)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3646,6 +3572,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawL-shape', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DrawL-shape',
+	config : {id: 'DrawL-shape', type : 'DrawObject', itemId : 'DrawObjectL', tooltip : 'Rita L-format objekt', iconCls : 'action-draw-L', disable : false, obectConfig : {type : 'L'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3655,28 +3583,9 @@ Ext.define('AdmClient.controller.toolDetails.DrawL-shape', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/L-shape/.test(toolObject.tool)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'L-shape';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type : 'DrawObject', itemId : 'DrawObjectL', tooltip : 'Rita L-format objekt', iconCls : 'action-draw-L', disable : false, obectConfig : {type : 'L'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DrawObjectL/.test(tool.itemId)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3714,6 +3623,8 @@ Ext.define('AdmClient.controller.toolDetails.DrawD-shape', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DrawD-shape',
+	config : {id: 'DrawD-shape', type : 'DrawObject', itemId : 'DrawObjectD', tooltip : 'Rita objekt med avfasade hörn', iconCls : 'action-draw-D', disable : false, obectConfig : {type : 'D'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3721,30 +3632,10 @@ Ext.define('AdmClient.controller.toolDetails.DrawD-shape', {
 			}
 		});
 	},
-	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/D-shape/.test(toolObject.tool)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return t.tool === 'D-shape';
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type : 'DrawObject', itemId : 'DrawObjectD', tooltip : 'Rita objekt med avfasade hörn', iconCls : 'action-draw-D', disable : false, obectConfig : {type : 'D'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DrawObjectD/.test(tool.itemId)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3782,6 +3673,8 @@ Ext.define('AdmClient.controller.toolDetails.ModifyGeometry', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'ModifyGeometry',
+	config : {id: 'ModifyGeometry', type: 'ModifyGeometry'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3791,29 +3684,9 @@ Ext.define('AdmClient.controller.toolDetails.ModifyGeometry', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/ModifyGeometry/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'ModifyGeometry' || t.tool === 'ModifyGeometry');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'ModifyGeometry'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/ModifyGeometry/.test(tool.type)) || (/ModifyGeometry/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3851,6 +3724,8 @@ Ext.define('AdmClient.controller.toolDetails.SelectGeometry', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'SelectGeometry',
+	config: {id: 'SelectGeometry', type: 'SelectGeometry'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3860,29 +3735,9 @@ Ext.define('AdmClient.controller.toolDetails.SelectGeometry', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/SelectGeometry/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'SelectGeometry' || t.tool === 'SelectGeometry');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'SelectGeometry'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/SelectGeometry/.test(tool.type)) || (/SelectGeometry/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3920,6 +3775,8 @@ Ext.define('AdmClient.controller.toolDetails.DeleteGeometry', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DeleteGeometry',
+	config : {id: 'DeleteGeometry', type: 'DeleteGeometry'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3929,28 +3786,9 @@ Ext.define('AdmClient.controller.toolDetails.DeleteGeometry', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/DeleteGeometry/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'DeleteGeometry' || t.tool === 'DeleteGeometry');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DeleteGeometry'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/DeleteGeometry/.test(tool.type)) || (/DeleteGeometry/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -3989,6 +3827,8 @@ Ext.define('AdmClient.controller.toolDetails.DeleteAllFeatures', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DeleteAllFeatures',
+	config : {id: 'DeleteAllFeatures', type: 'DeleteAllFeatures'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3998,28 +3838,9 @@ Ext.define('AdmClient.controller.toolDetails.DeleteAllFeatures', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/DeleteAllFeatures/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'DeleteAllFeatures' || t.tool === 'DeleteAllFeatures');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DeleteAllFeatures'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/DeleteAllFeatures/.test(tool.type)) || (/DeleteAllFeatures/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4058,6 +3879,8 @@ Ext.define('AdmClient.controller.toolDetails.FullExtent', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'FullExtent',
+	config : {id: 'FullExtent', type: 'FullExtent'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4067,28 +3890,9 @@ Ext.define('AdmClient.controller.toolDetails.FullExtent', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/FullExtent/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'FullExtent' || t.tool === 'FullExtent');
-				});
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'FullExtent'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/FullExtent/.test(tool.type)) || (/FullExtent/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4126,6 +3930,8 @@ Ext.define('AdmClient.controller.toolDetails.ZoomSelector', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'ZoomSelector',
+	config : {id: 'ZoomSelector', type: 'ZoomSelector'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4135,28 +3941,9 @@ Ext.define('AdmClient.controller.toolDetails.ZoomSelector', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/ZoomSelector/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'ZoomSelector' || t.tool === 'ZoomSelector');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'ZoomSelector'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/ZoomSelector/.test(tool) || /ZoomSelector/.test(tool.type)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4195,6 +3982,8 @@ Ext.define('AdmClient.controller.toolDetails.Print', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'Print',
+	config : {id: 'Print', type: 'Print'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4204,29 +3993,9 @@ Ext.define('AdmClient.controller.toolDetails.Print', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Print/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'Print' || t.tool === 'Print');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'Print'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/Print/.test(tool.type)) || (/Print/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4264,6 +4033,8 @@ Ext.define('AdmClient.controller.toolDetails.Identify', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'Identify',
+	config : {id: 'Identify', type: 'Identify', tooltip: 'Få information om objekt i kartan', iconCls: 'action-identify'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4273,28 +4044,9 @@ Ext.define('AdmClient.controller.toolDetails.Identify', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Identify/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'Identify' || t.tool === 'Identify');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'Identify', tooltip: 'Få information om objekt i kartan', iconCls: 'action-identify'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/Identify/.test(tool.type)) || (/Identify/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4332,6 +4084,8 @@ Ext.define('AdmClient.controller.toolDetails.Popup', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'Popup',
+	config: {id: 'Popup', type: 'Popup', showOnlyFirstHit: true, tolerance: 3, iconCls: 'action-popup', tooltip: 'Klicka på ett object för information'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4341,28 +4095,60 @@ Ext.define('AdmClient.controller.toolDetails.Popup', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/Popup/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'Popup' || t.tool === 'Popup');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'Popup', showOnlyFirstHit: true, tolerance: 3, iconCls: 'action-popup', tooltip: 'Klicka på ett object för information'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/Popup/.test(tool.type)) || (/Popup/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
+* A controller to handle tooldetails for identify tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.Permalink', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	toolId: 'Permalink',
+	config: {id: 'Permalink', type: 'Permalink', iconCls : 'action-permalink', tooltip: 'Dela kartan'},
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
 			}
-			this.getToolsGrid().store.commitChanges();
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4400,6 +4186,8 @@ Ext.define('AdmClient.controller.toolDetails.DetailReport', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DetailReport',
+	config : {id: 'DetailReport', type: 'DetailReport'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4409,28 +4197,9 @@ Ext.define('AdmClient.controller.toolDetails.DetailReport', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/DetailReport/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'DetailReport' || t.tool === 'DetailReport');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DetailReport'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/DetailReport/.test(tool.type)) || (/DetailReport/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4468,6 +4237,8 @@ Ext.define('AdmClient.controller.toolDetails.MeasureLine', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'MeasureLine',
+	config: {id: 'MeasureLine', type: 'MeasureLine'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4477,29 +4248,9 @@ Ext.define('AdmClient.controller.toolDetails.MeasureLine', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/MeasureLine/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'Identify' || t.tool === 'Identify');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'MeasureLine'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/MeasureLine/.test(tool.type)) || (/MeasureLine/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4537,6 +4288,8 @@ Ext.define('AdmClient.controller.toolDetails.MeasureArea', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'MeasureArea',
+	config: {id: 'MeasureArea', type: 'MeasureArea'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4546,29 +4299,9 @@ Ext.define('AdmClient.controller.toolDetails.MeasureArea', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/MeasureArea/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'Identify' || t.tool === 'Identify');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'MeasureArea'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if ((/MeasureArea/.test(tool.type)) || (/MeasureArea/.test(tool))) {
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4606,6 +4339,8 @@ Ext.define('AdmClient.controller.toolDetails.DeleteMeasure', {
 		ref : 'toolsGrid',
 		selector : '#toolsGrid'
 	}],
+	toolId: 'DeleteMeasure',
+	config : {id: 'DeleteMeasure', type: 'DeleteMeasure'},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4615,28 +4350,9 @@ Ext.define('AdmClient.controller.toolDetails.DeleteMeasure', {
 	},
 	
 	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
-		var toolObject = this.getToolsGrid().getSelectionModel().store.data.items[rowIndex].data;
-		var tool = null;
-		if (/DeleteMeasure/.test(toolObject.toolName)){
-			if (checked){
-				//find the right place in config object
-				var configItems = AdmClient.app.config.tools.filter(function(t){
-					return (t === 'DeleteMeasure' || t.tool === 'DeleteMeasure');
-				});
-				
-				if (configItems.length === 0){ // add tool to config object
-					tool = {type: 'DeleteMeasure'};
-					AdmClient.app.config.tools.push(tool);
-				}
-			} else {
-				for (var i = 0; i < AdmClient.app.config.tools.length; i++){
-					tool = AdmClient.app.config.tools[i];
-					if (/DeleteMeasure/.test(tool) || /DeleteMeasure/.test(tool.type)){
-						AdmClient.app.config.tools.splice(i, 1);
-					}
-				}
-			}
-			this.getToolsGrid().store.commitChanges();
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
 		}
 	}
 });
@@ -4849,33 +4565,58 @@ Ext.define('AdmClient.store.ToolStore', {
 		name : 'info',
 		type : 'string'
 	},{
+		name : 'id',
+		type : 'string'
+	}, {  
 		name : 'selected'
 	} ],
 
-	data : [ [ 'DrawGeometry', 'Point', 'Draw point', false ],
-	         [ 'DrawGeometry', 'Path', 'Draw line', false ],
-	         [ 'DrawGeometry', 'Polygon', 'Draw polygon.', false ],
-	         [ 'DrawGeometry', 'Text', 'Draw text.', false ],
-	         [ 'DrawObject', 'Rectangle', 'Draw rectangular object.', false ],
-	         [ 'DrawObject', 'Octagon', 'Draw octagonal object.', false ],
-	         [ 'DrawObject', 'L-shape', 'Draw L-shaped object.', false ],
-	         [ 'DrawObject', 'D-shape', 'Draw D-shaped object.', false ],
-			[ 'SelectGeometry', 'Select geometry', 'Tool for selecting geometry.', false ],
-			[ 'ModifyGeometry', 'Modify geometry', 'Tool for modify geometry.', false ],
-			[ 'DeleteGeometry', 'Delete geometry', 'Tool for delete single geometry.', false ],
-			[ 'DeleteAllFeatures', 'Delete all geometries', 'Tool for delete all geometries on map.', false ],
-			[ 'FullExtent', 'Full extent', 'Zoom to full extent.', false ],
-			[ 'ZoomSelector', 'Zoom to scale', 'Zoom to scale.', false ],
-			[ 'Print', 'Print', 'Tool for printing.', false ],
-			[ 'Identify', 'Identify', 'Identify features.', false ],
-			[ 'Popup', 'Popup', 'Tool to show popup window for features in popup layers.', false ],
-			[ 'DetailReport', 'Detail report', 'Tool for detail report.', false],
-			[ 'MeasureArea', 'Measure area', 'Measure area in 2D.', false ],
-			[ 'MeasureLine', 'Measure line', 'Measure line in 2D.', false ],
-			[ 'DeleteMeasure', 'Delete measure', 'Tool for delete measure.', false]
+	data : [ [ 'DrawGeometry', 'Point', 'Draw point', 'DrawPoint', false ],
+	         [ 'DrawGeometry', 'Path', 'Draw line', 'DrawLine', false ],
+	         [ 'DrawGeometry', 'Polygon', 'Draw polygon.', 'DrawPolygon', false ],
+	         [ 'DrawGeometry', 'Text', 'Draw text.', 'DrawText', false ],
+	         [ 'DrawObject', 'Rectangle', 'Draw rectangular object.', 'DrawRectangle', false ],
+	         [ 'DrawObject', 'Octagon', 'Draw octagonal object.', 'DrawOctagon', false ],
+	         [ 'DrawObject', 'L-shape', 'Draw L-shaped object.', 'DrawL-shape', false ],
+	         [ 'DrawObject', 'D-shape', 'Draw D-shaped object.', 'DrawD-shape', false ],
+			[ 'SelectGeometry', 'Select geometry', 'Tool for selecting geometry.', 'SelectGeometry', false ],
+			[ 'ModifyGeometry', 'Modify geometry', 'Tool for modify geometry.', 'ModifyGeometry', false ],
+			[ 'DeleteGeometry', 'Delete geometry', 'Tool for delete single geometry.', 'DeleteGeometry', false ],
+			[ 'DeleteAllFeatures', 'Delete all geometries', 'Tool for delete all geometries on map.', 'DeleteAllFeatures', false ],
+			[ 'FullExtent', 'Full extent', 'Zoom to full extent.', 'FullExtent', false ],
+			[ 'ZoomSelector', 'Zoom to scale', 'Zoom to scale.', 'ZoomSelector', false ],
+			[ 'Print', 'Print', 'Tool for printing.', 'Print', false ],
+			[ 'Identify', 'Identify', 'Identify features.', 'Identify', false ],
+			[ 'Popup', 'Popup', 'Tool to show popup window for features in popup layers.', 'Popup', false ],
+			[ 'Permalink', 'Permalink', 'Dela karta.', 'Permalink', false ],
+			[ 'DetailReport', 'Detail report', 'Tool for detail report.', 'DetailReport', false],
+			[ 'MeasureArea', 'Measure area', 'Measure area in 2D.', 'MeasureArea', false ],
+			[ 'MeasureLine', 'Measure line', 'Measure line in 2D.', 'MeasureLine', false ],
+			[ 'DeleteMeasure', 'Delete measure', 'Tool for delete measure.', 'DeleteMeasure', false]
 			//[ 'A', 'Detail report', 'Tool for detail report.', false]
-	]
+	],
 	
+	checkTool: function(rowIndex, checked, tool) {
+		var toolObject = this.data.items[rowIndex].data;
+
+		if (checked){
+			//find the right place in config object
+			var configItems = AdmClient.app.config.tools.filter(function(t){
+				return (t.id === toolObject.id);
+			});
+			if (configItems.length === 0){ // add tool to config object
+				AdmClient.app.config.tools.push(tool);
+			}
+		} else {
+			for (var i = 0; i < AdmClient.app.config.tools.length; i++){
+				tool = AdmClient.app.config.tools[i];
+				if (toolObject.id === tool.id) {
+					AdmClient.app.config.tools.splice(i, 1);
+				}
+			}
+		}
+		this.commitChanges();
+	}
 });
 /*
 Copyright Härnösands kommun(C) 2014 
@@ -5489,7 +5230,7 @@ Ext.define('AdmClient.model.Config', {
 		config.extent = this.extent;
 		config.attribution = this.attribution;
 		config.drawStyle = this.drawStyle;
-		config.tools = this.drawStyle;
+		config.tools = this.tools;
 		config.layers = this.layers;
 		config.version = this.version;
 		config.autoClearDrawLayer = this.autoClearDrawLayer;
@@ -5577,6 +5318,7 @@ Ext.application({
 	                                                    
 	                                                       
 	                                                    
+	                                                        
 	                                                           
 	                                                          
 	                                                          
@@ -5654,6 +5396,7 @@ Ext.application({
                   'toolDetails.Print',
                   'toolDetails.Identify',
                   'toolDetails.Popup',
+                  'toolDetails.Permalink',
                   'toolDetails.DetailReport',
                   'toolDetails.MeasureLine',
                   'toolDetails.MeasureArea',

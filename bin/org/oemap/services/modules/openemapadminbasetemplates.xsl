@@ -6,16 +6,18 @@
 	<xsl:template match="Document">
 	
 	<script type="text/javascript">
+		var appPath = '/openemapadmin-1.6.0-rc.4';
 		var gisServer = '<xsl:value-of select="gisServer" />';
 		var wmsServer = gisServer + '<xsl:value-of select="wmsServer" />';
 		var wmsGetCapabilities = gisServer + '<xsl:value-of select="wmsGetCapabilities" />';
 		var wfsServer = gisServer + '<xsl:value-of select="wfsServer" />';
 		var wmtsServer = gisServer + '<xsl:value-of select="wmtsServer" />';
-		var adminproxy = window.location.protocol + '//' + window.location.host + '<xsl:value-of select="/Document/requestinfo/contextpath" />/<xsl:value-of select="adminproxy" />';
-		if (adminproxy !== ''){
-			adminproxy += '?url=';
-			wmsGetCapabilities = adminproxy + wmsGetCapabilities;
+		var proxyUrl = window.location.protocol + '//' + window.location.host + '<xsl:value-of select="/Document/requestinfo/contextpath" />/<xsl:value-of select="adminproxy" />';
+		if (proxyUrl !== ''){
+			proxyUrl += '?url=';
+			wmsGetCapabilities = proxyUrl + wmsGetCapabilities;
 		}
+		var imageBasePath = '<xsl:value-of select="/Document/requestinfo/contextpath" />/static/f/<xsl:value-of select="/Document/module/sectionID" />/<xsl:value-of select="/Document/module/moduleID" />/OpenEMap-Admin/';
 	</script>
 
    	<script type="text/javascript">

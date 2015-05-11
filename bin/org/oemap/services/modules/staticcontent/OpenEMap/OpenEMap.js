@@ -166,7 +166,7 @@ var initOpenEMap = function(configPath, options, callback) {
 	// Defaults to show map, toolbar, zoomTools, layers, baseLayers and search controls
 	options.gui = options.gui || {};
 	options.gui = {
-		map : options.gui.map || {},
+		map : options.gui.map,
 		toolbar : options.gui.toolbar || {},
 		zoomTools : options.gui.zoomTools || {},
 		layers : options.gui.layers || {},
@@ -273,8 +273,6 @@ var initOpenEMap = function(configPath, options, callback) {
 			}
 		}
 	};
-	
-
 	// Make sure OpenEMap is loaded
 	waitUntilOpenEMapIsLoaded(configPath, options, callback);
 };

@@ -67,7 +67,7 @@ public class OpenEmapAdminBase extends AnnotatedForegroundModule {
 	
 	@ModuleSetting
     @TextFieldSettingDescriptor(name = "WMTS Server", description = "Context path to WMTS endpoint on GIS server (eg. /geoserver/gwc/service/wms")
-    protected String wmtsServer = "/geoservergwc/service/wms";
+    protected String wmtsServer = "/geoserver/gwc/service/wms";
 	
 	@ModuleSetting
     @TextFieldSettingDescriptor(name = "Alias for proxy", description = "Alias set in admin proxy.")
