@@ -21,6 +21,7 @@ Copyright Härnösands kommun(C) 2014  <name of author>
 
 package org.oemap.services.modules;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,6 +32,7 @@ import org.oemap.services.beans.Config;
 import org.oemap.services.bl.OpenEmapBeanFactory;
 import org.oemap.services.modules.responsehandler.StringResponseHandler;
 
+import se.unlogic.hierarchy.core.annotations.WebPublic;
 import se.unlogic.hierarchy.core.beans.User;
 import se.unlogic.hierarchy.core.interfaces.ForegroundModuleDescriptor;
 import se.unlogic.hierarchy.core.interfaces.SectionInterface;
@@ -81,6 +83,15 @@ public class PublicConfigModule extends AnnotatedRESTModule {
 		configDAO = new AnnotatedDAOWrapper<Config, Integer>(dao, "configId",
 				Integer.class);
 	}
+
+	@WebPublic(alias = "configlist")
+	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse getConfigList(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
+		List<Config> configs = configDAO.getAll();
+		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
+		String json = configFactory.createConfigListJSON(configs);
+		HTTPUtils.sendReponse(json, res);
+		return null;
+	};
 
 	/**
 	 * Returns a specific list

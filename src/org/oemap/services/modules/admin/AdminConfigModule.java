@@ -124,7 +124,6 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 		}
 		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
 		String json = configFactory.createConfigListJSON(filteredConfigs);
-//		String json = configFactory.createJSON(filteredConfigs);
 		HTTPUtils.sendReponse(json, res);
 		return null;
 	};

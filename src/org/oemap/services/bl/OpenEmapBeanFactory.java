@@ -55,7 +55,7 @@ public class OpenEmapBeanFactory<T> {
 		response = new RestResponseObject();
 		
 		FilterProvider filters = new SimpleFilterProvider().addFilter("listFilter",
-		SimpleBeanPropertyFilter.filterOutAllExcept("username", "isPublic", "configid", "name"));
+		SimpleBeanPropertyFilter.filterOutAllExcept("configid", "name", "username", "isPublic"));
 		filteredWriter = mapper.writer(filters);
 	};
 
