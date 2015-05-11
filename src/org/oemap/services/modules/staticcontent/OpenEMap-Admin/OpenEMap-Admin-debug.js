@@ -1817,7 +1817,7 @@ Ext.define('AdmClient.controller.ToolsGrid', {
 			for (var j = 0; j < AdmClient.app.config.tools.length; j++){
 				var configTool = AdmClient.app.config.tools[j];
 				if (configTool.id === toolName.data.id) {
-					toolname.data.selected = true;
+					toolName.data.selected = true;
 				} 
 				toolName.save();
 			}
@@ -4125,6 +4125,57 @@ Copyright Härnösands kommun(C) 2014
 
 
 /**
+* A controller to handle tooldetails for identify tool.
+*/
+
+Ext.define('AdmClient.controller.toolDetails.Permalink', {
+	extend :  AdmClient.controller.MapConfiguration ,
+	                                                                                                   
+	refs : [{
+		ref : 'toolsGrid',
+		selector : '#toolsGrid'
+	}],
+	toolId: 'Permalink',
+	config: {id: 'Permalink', type: 'Permalink', iconCls : 'action-permalink', tooltip: 'Dela kartan'},
+	init : function() {
+		this.control({
+			'#toolsGrid checkcolumn' : {
+				checkchange : this.toolSelected
+			}
+		});
+	},
+	
+	toolSelected : function(chkBox, rowIndex, checked, eOpts) {
+		var store = this.getToolsGrid().getSelectionModel().store;
+		if (store.data.items[rowIndex].data.id === this.toolId) {
+			this.getToolsGrid().getSelectionModel().store.checkTool(rowIndex, checked, this.config);
+		}
+	}
+});
+
+/*
+Copyright Härnösands kommun(C) 2014 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    All rights reserved. This program and the accompanying materials
+    are made available under the terms of the GNU Affero General Public License
+    which accompanies this distribution, and is available at
+    http://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+
+/**
 * A controller to handle tooldetails for details report tool.
 */
 
@@ -4537,6 +4588,7 @@ Ext.define('AdmClient.store.ToolStore', {
 			[ 'Print', 'Print', 'Tool for printing.', 'Print', false ],
 			[ 'Identify', 'Identify', 'Identify features.', 'Identify', false ],
 			[ 'Popup', 'Popup', 'Tool to show popup window for features in popup layers.', 'Popup', false ],
+			[ 'Permalink', 'Permalink', 'Dela karta.', 'Permalink', false ],
 			[ 'DetailReport', 'Detail report', 'Tool for detail report.', 'DetailReport', false],
 			[ 'MeasureArea', 'Measure area', 'Measure area in 2D.', 'MeasureArea', false ],
 			[ 'MeasureLine', 'Measure line', 'Measure line in 2D.', 'MeasureLine', false ],
@@ -5266,6 +5318,7 @@ Ext.application({
 	                                                    
 	                                                       
 	                                                    
+	                                                        
 	                                                           
 	                                                          
 	                                                          
@@ -5343,6 +5396,7 @@ Ext.application({
                   'toolDetails.Print',
                   'toolDetails.Identify',
                   'toolDetails.Popup',
+                  'toolDetails.Permalink',
                   'toolDetails.DetailReport',
                   'toolDetails.MeasureLine',
                   'toolDetails.MeasureArea',

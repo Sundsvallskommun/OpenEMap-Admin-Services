@@ -60,16 +60,8 @@ Ext.define('OpenEMap.action.DeleteAllFeatures', {
     constructor : function(config){
         
          config.control = new OpenLayers.Control.Button({
-            trigger: function(){
-                
-                config.mapPanel.measureLayer.removeAllFeatures();
-                config.mapPanel.measureLayerSegmentsLayer.removeAllFeatures();
-
-                config.mapPanel.map.layers.forEach(function(l){
-                    if(l instanceof OpenLayers.Layer.Vector){
-                        l.removeAllFeatures();
-                    }
-                });
+            trigger: function() {
+                config.mapPanel.drawLayer.removeAllFeatures();
             }
         });
 
@@ -517,21 +509,23 @@ Ext.define('OpenEMap.action.DrawGeometry', {
         config.control = new Control(layer, OpenLayers.Handler[config.geometry]);
 
         layer.events.register('beforefeatureadded', this, function(evt){
-            if (this.isText(evt.feature)){
-                Ext.Msg.prompt('Text', 'Mata in text:', function(btn, text){
-                    if (btn == 'ok'){
-                        evt.feature.attributes.label = text;
-                        evt.feature.data.label = text;
-                        layer.redraw();
-                    }
-                });
+            if (this.isText(evt.feature)) {
+            	if (evt.feature.state || evt.feature.state === 'insert') {
+	                Ext.Msg.prompt('Text', 'Mata in text:', function(btn, text){
+	                    if (btn == 'ok'){
+	                        evt.feature.attributes.label = text;
+	                        evt.feature.data.label = text;
+	                        layer.redraw();
+	                    }
+	                });
+	            } 
             }
         });
         
                 
         config.iconCls = config.iconCls || 'action-drawgeometry';
        
-       if (!config.tooltip){
+       	if (!config.tooltip){
        		config.tooltip = config.geometry === 'Polygon' ? 'Rita område' :
          		config.geometry === 'Path' ? 'Rita linje' :
          		config.geometry === 'Point' ? 'Rita punkt' : 'Rita geometri';
@@ -539,7 +533,7 @@ Ext.define('OpenEMap.action.DrawGeometry', {
          	if (this.isText(config)){
          		config.tooltip = 'Placera ut text.';	
          	}
-       }
+       	}
         config.toggleGroup = 'extraTools';
         
         this.callParent(arguments);
@@ -1860,6 +1854,108 @@ Ext.define('OpenEMap.action.ModifyText', {
         
         this.callParent(arguments);
     }
+});
+
+/*    
+    Copyright (C) 2014 Härnösands kommun
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/**
+ * Action in toolbar that zooms the user to full extent
+ * 
+ * The snippet below is from configuration to MapClient.view.Map
+ * 
+ * 
+ *        "tools": ["Permalink"]
+ */
+Ext.define('OpenEMap.action.Permalink', {
+    extend:  OpenEMap.action.Action ,
+    constructor: function(config) {
+        this.client = config.client;
+    
+        config.control = config.control = new OpenLayers.Control.Button({
+            trigger: this.onClick.bind(this)
+        });
+        
+        config.iconCls = config.iconCls || 'action-permalink';
+        config.tooltip = config.tooltip || 'Generera permalink';
+        
+        this.callParent(arguments);
+    },
+    onClick: function() {
+        this.generate();
+    },
+    generate: function() {
+        var success = function(response) {
+            var id = Ext.decode(response.responseText);
+            
+            this.createWindow(id);
+        };
+        
+        Ext.Ajax.request({
+            url: OpenEMap.wsUrls.permalinks,
+            method: 'POST',
+            jsonData: this.client.getPermalinkdata(),
+            success: success.bind(this)
+        });
+    },
+    createWindow: function(id) {
+        var url = document.location.origin + OpenEMap.wsUrls.permalinkclient + '?permalink=' + id;
+        var label = '<a href="' + url + '" target="_blank">' + url + '</a>';
+    
+        if (this.w) {
+            if (this.w.isHidden()) this.w.show();
+            this.w.items.getAt(0).getComponent('permalink').update(label);
+            return;
+        }
+        
+        this.w = Ext.create('Ext.Window', {
+            title: 'Permalink',
+            layout: 'fit',
+            xtype: 'form',
+            width: 400,
+            bodyPadding: 5,
+            bodyStyle: {
+                border: '0px'
+            },
+            plain: true,
+            border: false,
+            closeAction: 'hide',
+            items: {
+                layout: 'anchor',
+                border: false,
+                items: {
+                    xtype: 'label',
+                    name: 'permalink',
+                    itemId: 'permalink',
+                    readOnly: true,
+                    border: false,
+                    anchor: '100%',
+                    html: label
+                }
+            },
+            bbar: [ '->',
+                {
+                    text: 'Uppdatera',
+                    handler: this.onClick.bind(this)
+                }
+            ]
+        });
+        this.w.show();
+    }
+    
 });
 
 /*    
@@ -3755,6 +3851,10 @@ Ext.define('OpenEMap.data.GroupedLayerTree' ,{
                 metadata: typeof node.get('metadata') === 'string' ? {} : node.get('metadata'),
                 layers: []
             };
+            
+            if (!layerCfg.wms || Object.keys(layerCfg.wms).length === 0) layerCfg.wms = undefined;
+            if (!layerCfg.wfs || Object.keys(layerCfg.wfs).length === 0) layerCfg.wfs = undefined;
+//            if (!layerCfg.layers || layerCfg.layers.length === 0) layerCfg.layers = undefined;
 
 	        for(var j=0; j<node.childNodes.length;j++) {
 		        layerCfg.layers.push(configAddLayer(node.childNodes[j], includeLayerRef));
@@ -4078,7 +4178,30 @@ Ext.define('OpenEMap.view.layer.Tree' ,{
         
         this.callParent(arguments);
     },
-    
+    getBaseLayersConfiguration: function() {
+        var layerConfigs = [];
+
+        function configAddLayer(layer) {
+	        var layerCfg = {
+	            name: layer.name,
+	            wms: {
+	            	url: layer.url, 
+	            	options: layer.options, 
+	            	params: layer.params
+	        	},
+            	visibility: layer.visibility
+	        };
+			layerCfg.wms.options.visibility = layer.visibility; 
+			return layerCfg;
+        }
+
+        var baseLayers = this.mapPanel.map.layers.filter(function(layer) { return layer.isBaseLayer; });
+        for (var i=0; i<baseLayers.length;i++) {
+	        layerConfigs.unshift(configAddLayer(baseLayers[i]));
+        }
+	    return layerConfigs;
+    },
+
     getConfig: function(includeLayerRef) {
     	// Start with initial config to get a complete config object
         var config = Ext.clone(this.client.initialConfig);
@@ -4088,8 +4211,11 @@ Ext.define('OpenEMap.view.layer.Tree' ,{
 
         // layer tree does not include base layers so extract them from initial config
     	var baseLayers = config.layers.filter(function(layer) {
-    		return (layer.wms && layer.wms.options.isBaseLayer) ? layer : false;
+    		return (layer.wms && layer.wms.options && layer.wms.options.isBaseLayer) ? layer : false;
     	});
+    	
+    	baseLayers = this.getBaseLayersConfiguration();
+    	
     	config.layers = baseLayers.concat(layers);
     	
     	return config;
@@ -5379,6 +5505,7 @@ Ext.define('OpenEMap.Gui', {
                                                     
                                                 
                                             
+                                           
                                        
                                        
                                                 
@@ -5542,6 +5669,8 @@ Ext.define('OpenEMap.Gui', {
                 } else if (type == 'Identify') {
                     config.basePath = basePath;
                     config.layers = layers;
+                    config.client = this.client;
+                } else if (type == 'Permalink') {
                     config.client = this.client;
                 } else if (type == 'Popup') {
                     config.layers = layers;
@@ -5955,6 +6084,9 @@ Ext.define('OpenEMap.config.Parser', {
         // filter out plain layer definitions (no group)
         var layers = this.extractLayers(layerTree);
         
+        // Sort baselayers to put the layer with visibility=true first, because OpenLayers uses the first baselayer as the active one.
+        layers = this.sortBaseLayers(layers);
+
         options.allOverlays = !layers.some(this.isBaseLayer, this);
         
         // Create OpenLayers.Layer.WMS from layer definitions that describe WMS source
@@ -5975,6 +6107,20 @@ Ext.define('OpenEMap.config.Parser', {
         return map;
     },
 
+    sortBaseLayers: function(layers) {
+    	var baseLayers = layers.filter(function(layer) {return (layer.layer && layer.layer.isBaseLayer);});
+    	var overlays = layers.filter(function(layer) {return !(layer.layer && layer.layer.isBaseLayer);});
+    	var sorted = false;
+    	var sortedBaseLayers = [];
+    	for (var ix=0; baseLayers.length > ix; ix++) {
+    		if (baseLayers[ix].visibility) {
+    			sortedBaseLayers.unshift(baseLayers[ix]);
+    		} else {
+    			sortedBaseLayers.push(baseLayers[ix]);
+    		}
+    	}
+    	return sortedBaseLayers.concat(overlays);
+    },
     /**
     * Iterate over the layertree and create a ExtJS-tree structure
     * @private
@@ -8126,7 +8272,7 @@ Ext.define('OpenEMap.Client', {
                                             
                                                            
                                                              
-    version: '1.6.0-rc.3',
+    version: '1.6.0-rc.4',
     /**
      * OpenLayers Map instance
      * 
@@ -8192,6 +8338,7 @@ Ext.define('OpenEMap.Client', {
      * 
      * @param {Object} config Map configuration object
      * @param {Object} options Additional MapClient options
+     * @param {Function options.callback Callback that is called when the client is configured and ready 
      * @param {Object} options.gui Options to control GUI elements. Each property in this object is
      * essentially a config object used to initialize an Ext JS component. If a property is undefined or false
      * that component will not be initialized except for the map component. If a property is a defined
@@ -8232,6 +8379,25 @@ Ext.define('OpenEMap.Client', {
         if (this.gui.controlToActivate) {
             this.gui.controlToActivate.activate();
         }
+        
+        if (options.callback) {
+            options.callback.call(this);
+        }
+    },
+    getPermalinkdata: function() {
+        var features = this.drawLayer.features;
+        var format = new OpenLayers.Format.GeoJSON();
+        var geojson = format.write(features);
+    
+        return {
+            version: this.version,
+            config: this.getConfig(),
+            options: this.initialOptions,
+            extent: this.map.getExtent().toArray(),
+            drawLayer: {
+                geojson: geojson
+            }
+        };
     },
     /**
      * @param {boolean} includeLayerRef include reference to OpenLayers layer if available
@@ -8638,10 +8804,21 @@ Ext.apply(OpenEMap, {
 
     /**
      * @property {Object} [wsUrls] WS paths to be used for AJAX requests
+     * @property {string} [wsUrls.basePath] basepath to Open eMap Admin services 
+     * @property {string} [wsUrls.configs] relative path to publig configs within Open eMap Admin services
+     * @property {string} [wsUrls.adminconfigs] path to admin config service within Open eMap Admin services 
+     * @property {string} [wsUrls.permalinks] path to Open eMap Permalink service 
+     * @property {string} [wsUrls.permalinkclient] path to HTML-page that the permalink should point to 
+     * @property {string} [wsUrls.metadata]  path to Open eMap Geo Metadata service
+     * @property {string} [wsUrls.metadataAbstract] path to Open eMap Geo Metadata Abstract service
+     * @property {string} [wsUrls.servers] unused
+     * @property {string} [wsUrls.layers] unused 
      */
     wsUrls: {
         basePath:   	'/openemapadmin',
-        configs:    	'/configs',
+        permalinks:     '/openemappermalink/permalinks',
+        permalinkclient:'index.html',
+        configs:    	'/configlist',
         adminconfigs: 	'/adminconfigs',
         servers:    	'settings/servers',
         layers:     	'layers/layers',
