@@ -41,7 +41,7 @@
 					toolbar : {},
 					zoomTools : {},
 					layers : {
-//						1type: 'advanced'
+						type: 'advanced'
 					},
 					baseLayers : {},
 					searchFastighet : {}
@@ -54,7 +54,9 @@
 				    // name of user to be used when calling search-lm REST API
 				    lmUser: 'sundsvall', 
 				    // Base path to be used for all AJAX requests against Elasticsearch REST API
-				    basePathES: '/search/es/', 
+				    basePathES: '/search/es/',
+				    // Base path to images  
+					basePathImages: '<xsl:value-of select="/Document/requestinfo/contextpath" />/static/f/<xsl:value-of select="/Document/module/sectionID" />/<xsl:value-of select="/Document/module/moduleID" />/OpenEMap/resources/images/',
 				    // URL/paths related to WMS usage / advanced layer list
 				    wmsURLs: { 
 				    	// URL to be used to fetch WMS capabilities etc. for add layer
@@ -62,10 +64,10 @@
 				        // URL to be used when WMS layer has been added to config
 				        url: '<xsl:value-of select="gisServer" /><xsl:value-of select="wmsServer" />', 
 				        // URL to getcapabilities document. Must include request parameter (eg. https://extmap.sundsvall.se/geoserver/wms?request=GetCapabilities)
-				        getCapabilities: '<xsl:value-of select="gisServer" /><xsl:value-of select="wmsServer" /><xsl:value-of select="wmsGetCapabilities" />' 
+				        getCapabilities: '<xsl:value-of select="gisServer" /><xsl:value-of select="wmsGetCapabilities" />' 
 				    },
 				    //Base path to proxy to be used for WFS-post
-				    basePathProxy: '<xsl:value-of select="adminproxy" />', 
+				    basePathProxy: '<xsl:value-of select="adminproxy" />?url=', 
 				    // WS paths to be used for AJAX requests
 				    wsUrls: { 
 				    	//basepath to Open eMap Admin
@@ -77,7 +79,7 @@
 				        // path to permalinks
 				        permalinks:     '/openemappermalink-1.6.0/permalinks',
 				        //path to html-file used for opening permalinks 
-				        permalinkclient:'index.html', 
+				        permalinkclient:'<xsl:value-of select="/Document/requestinfo/contextpath" />/usermap', 
 				        metadata:   	'geometadata/getmetadatabyid', 
 				        metadata_abstract: 'geometadata/getabstractbyid'
 				    },
