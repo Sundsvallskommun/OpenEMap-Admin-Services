@@ -164,15 +164,16 @@ var loadJsScripts = function(files) {
 var initOpenEMap = function(configPath, options, callback) {
 	// Apply defaults to gui
 	// Defaults to show map, toolbar, zoomTools, layers, baseLayers and search controls
-	options.gui = options.gui || {};
-	options.gui = {
-		map : options.gui.map,
-		toolbar : options.gui.toolbar || {},
-		zoomTools : options.gui.zoomTools || {},
-		layers : options.gui.layers || {},
-		baseLayers : options.gui.baseLayers || {},
-		searchFastighet : options.gui.searchFastighet || {}
-	};
+	if (typeof options === undefined) {
+		options.gui = {
+			map : false,
+			toolbar : {},
+			zoomTools : {},
+			layers : {},
+			baseLayers : {},
+			searchFastighet : {}
+		};
+	}
 
 	var waitUntilOpenEMapIsLoaded = function(conf, options, callback) {
 		if ((typeof OpenEMap === "undefined") || (typeof OpenEMap.Client === "undefined")) {
@@ -215,7 +216,7 @@ var initOpenEMap = function(configPath, options, callback) {
 			// If a permalink parameter is used in URL, use it
 			} else if (mapClient.params.permalink) {
 	            Ext.Ajax.request({
-			    	url: OpenEMap.wsUrls.permalinks + '/' + this.params.permalink,
+			    	url: OpenEMap.wsUrls.permalinks + '/' + mapClient.params.permalink,
 			    	success: function(response) {
 			    		var permalinkdata = Ext.decode(response.responseText);
 			    		mapClient.configure(permalinkdata.config, permalinkdata.options);

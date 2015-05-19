@@ -614,6 +614,7 @@ Ext.define('AdmClient.model.Layer', {
     	{name: 'isGroupLayer', type: 'boolean', defaultValue: false},
     	{name: 'isBaseLayer', mapping: 'wms.options.isBaseLayer',  type : 'boolean'},
         {name: 'visibility', mapping: 'wms.options.visibility', type: 'boolean'},
+        {name: 'expanded', type: 'boolean', defaultValue: false},
         {name: 'wfs', mapping: 'wfs', type: 'object', defaultValue: null},
     	{name: 'layer', type: 'object'}, // OpenLayers reference
         {name: 'layers', type: 'array', defaultValue: null}
@@ -2821,7 +2822,7 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
     * @return {object}                    layer   OpenEMap layer
     */
     nodeToLayerConfig: function(node) {
-        var attributeList = ['name','wms','wfs','metadataUrl', 'isGroupLayer', 'queryable', 'clickable'];
+        var attributeList = ['name','wms','wfs','metadataUrl', 'isGroupLayer', 'queryable', 'clickable', 'expanded'];
         var layer = {};
         var me = this;
 
@@ -3046,7 +3047,8 @@ Ext.define('AdmClient.controller.ConfigLayers', {
                 var root = tree.getRootNode();
                 root.appendChild({
                     name : text,
-                    isGroupLayer: true
+                    isGroupLayer: true,
+                    expanded: true
                 });
             }
         });
@@ -3223,8 +3225,6 @@ Ext.define('AdmClient.controller.ConfigLayers', {
         }
         // Do the node have sublayers, iterate over them
         if(layer.layers) {
-            // Expand all groups
-            layer.expanded = true;
             layer.layers.forEach(arguments.callee, this);
         } else {
             // If no sublayers, this is a leaf

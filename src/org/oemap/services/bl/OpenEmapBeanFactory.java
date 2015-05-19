@@ -55,8 +55,13 @@ public class OpenEmapBeanFactory<T> {
 		response = new RestResponseObject();
 		
 		FilterProvider filters = new SimpleFilterProvider().addFilter("listFilter",
-		SimpleBeanPropertyFilter.filterOutAllExcept("configid", "name", "username", "isPublic"));
+				SimpleBeanPropertyFilter.filterOutAllExcept("configId", "name", "username", "isPublic"));
+//		filters.addFilter("listAll",
+//				SimpleBeanPropertyFilter.filterOutAllExcept("configId", "name", "username", "isPublic", "resolutions", "search", "attribution", "version", "maxExtent", "extent", "autoClearDrawLayer", "drawStyles", "tools", "layers", "units", "projection", "options"));
 		filteredWriter = mapper.writer(filters);
+//		FilterProvider filters = new SimpleFilterProvider().addFilter("listAll",
+//		SimpleBeanPropertyFilter.filterOutAllExcept("configId", "name", "username", "isPublic", "resolutions", "search", "attribution", "version", "maxExtent", "extent", "autoClearDrawLayer", "drawStyles", "tools", "layers", "units", "projection", "options"));
+//		filteredWriter = mapper.writer(filters);
 	};
 
 	public void setRestResponseObject(boolean success, Integer id,
@@ -152,13 +157,13 @@ public class OpenEmapBeanFactory<T> {
 		return this.mapper.writeValueAsString(bean);
 	}
 
-	public String createConfigListJSON(List<T> configs) throws JsonGenerationException,
-			JsonMappingException, IOException {
-		return filteredWriter.writeValueAsString(configs);
-	}
-	
 	public String createJSON(List<T> beans) throws JsonGenerationException,
 			JsonMappingException, IOException {
 		return this.mapper.writeValueAsString(beans);
+	}
+	
+	public String createConfigListJSON(List<T> configs) throws JsonGenerationException,
+			JsonMappingException, IOException {
+		return filteredWriter.writeValueAsString(configs);
 	}
 }

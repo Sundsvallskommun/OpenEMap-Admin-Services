@@ -14,23 +14,39 @@
 	    </style>
 		<script type="text/javascript">
 		
+			var disableStyle = function(styleName, disabled) {
+			    var styles = document.styleSheets;
+			    var href = '';
+			    for (var i = 0; i !== styles.length; i++) {
+			    	if (typeof styles[i].href === 'string') {
+				        href = styles[i].href.split("/");
+				        href = href[href.length - 1];
+				
+				        if (href === styleName) {
+				            styles[i].disabled = disabled;
+				            break;
+				        }
+				    }
+			    }
+			};
+
 			// Hide OH-menus, to show map in fullscreen
 			var hideOH = function(){
 				$('header').css('display', 'none');
-							$('#mapContent').height(window.innerHeight);
-							$('#mapContent').width(window.innerWidth);
-							$('body').css('overflow', 'hidden');
-							//$('#mapContent').css('position', 'absolute');
-							//$('#mapContent').css('left', 0);
-							//$('#mapContent').css('top', 0);
-							
-							$("link[src='{/document/requestinfo/contextpath}/css/global.css']").remove();
-							$("link[src='{/document/requestinfo/contextpath}/css/header.css']").remove();
-							$("link[src='{/document/requestinfo/contextpath}/css/layout.css']").remove();
-							$("link[src='{/document/requestinfo/contextpath}/css/modules.css']").remove();
-							$("link[src='{/document/requestinfo/contextpath}/css/interface.css']").remove();
-							$("link[src='{/document/requestinfo/contextpath}/css/footer.css']").remove();
-							$("link[src='{/document/requestinfo/contextpath}/css/openhierarchy.css']").remove();
+				$('#mapContent').height(window.innerHeight);
+				$('#mapContent').width(window.innerWidth);
+				$('body').css('overflow', 'hidden');
+				//$('#mapContent').css('position', 'absolute');
+				//$('#mapContent').css('left', 0);
+				//$('#mapContent').css('top', 0);
+				
+				disableStyle('global.css', true);
+				disableStyle('header.css', true);
+				disableStyle('layout.css', true);
+				disableStyle('modules.css', true);
+				disableStyle('interface.css', true);
+				disableStyle('footer.css', true);
+				disableStyle('openhierarchy.css', true);
 			};
 			
 			var options = {
@@ -44,7 +60,9 @@
 						type: 'advanced'
 					},
 					baseLayers : {},
-					searchFastighet : {}
+					searchFastighet : {},
+//					showCoordinate: {renderTo: 'showcoordinate'},
+					scalebar: {}
 				},
 				OpenEMap: {
 					// Base path to be used for mapfish print servlet requests
@@ -102,7 +120,7 @@
 		    waitUntilOpenEMapIsDefined();
     
 		</script>
-		<div id="mapContent" style="position: absolute; left: 0; right: 0;">
-		</div>
+		<div id="mapContent" style="position: absolute; left: 0; right: 0;"></div>
+		<div id="showcoordinate" style="position: absolute; bottom: 0px; left: 10px;" ></div>
 	</xsl:template>
 </xsl:stylesheet>
