@@ -69,6 +69,22 @@ public class UserMap extends AnnotatedForegroundModule {
     @TextFieldSettingDescriptor(name = "Alias for proxy", description = "Alias set in admin proxy.")
     protected String adminproxy = "adminproxy";
 
+	@ModuleSetting
+    @TextFieldSettingDescriptor(name = "Permalink service", description = "URL to permalink service (must be on same domain).")
+    protected String permalinkService = "/openemappermalink-1.6.0/permalinks";
+
+	@ModuleSetting
+    @TextFieldSettingDescriptor(name = "Permalink page", description = "URL to use when opening the permalink")
+    protected String permalinkURL = "/usermap";
+
+	@ModuleSetting
+    @TextFieldSettingDescriptor(name = "Metadata service", description = "URL to metadata service")
+    protected String metadata = "geometadata/getmetadatabyid";
+
+	@ModuleSetting
+    @TextFieldSettingDescriptor(name = "Metadata abstract service", description = "URL to metadata service, when fetching abstract")
+    protected String metadataAbstract = "geometadata/getabstractbyid";
+
 	protected String usr = null;
 	
 	@Override
@@ -99,6 +115,10 @@ public class UserMap extends AnnotatedForegroundModule {
 		XMLUtils.appendNewElement(doc, document, "wfsServer", wfsServer);
 		XMLUtils.appendNewElement(doc, document, "wmtsServer", wmtsServer);
 		XMLUtils.appendNewElement(doc, document, "adminproxy", adminproxy);
+		XMLUtils.appendNewElement(doc, document, "permalinkService", permalinkService);
+		XMLUtils.appendNewElement(doc, document, "permalinkURL", permalinkURL);
+		XMLUtils.appendNewElement(doc, document, "metadata", metadata);
+		XMLUtils.appendNewElement(doc, document, "metadataAbstract", metadataAbstract);
 		
 		return doc;
 	}

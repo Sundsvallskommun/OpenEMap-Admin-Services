@@ -47,6 +47,7 @@
 				disableStyle('interface.css', true);
 				disableStyle('footer.css', true);
 				disableStyle('openhierarchy.css', true);
+				
 			};
 			
 			var options = {
@@ -95,11 +96,12 @@
 				        // relative path to adminconfigs, set in admin of modules in OpenHierarchy
 				        adminconfigs: 	'/adminconfigs',  
 				        // path to permalinks
-				        permalinks:     '/openemappermalink-1.6.0/permalinks',
+				        permalinks:     '<xsl:value-of select="permalinkService" />',
 				        //path to html-file used for opening permalinks 
-				        permalinkclient:'<xsl:value-of select="/Document/requestinfo/contextpath" />/usermap', 
-				        metadata:   	'geometadata/getmetadatabyid', 
-				        metadata_abstract: 'geometadata/getabstractbyid'
+				        permalinkclient:'<xsl:value-of select="/Document/requestinfo/contextpath" /><xsl:value-of select="permalinkURL" />',
+				        // path to metadata services
+				        metadata:   	'<xsl:value-of select="metadata" />', 
+				        metadata_abstract: '<xsl:value-of select="metadataAbstract" />'
 				    },
 					username: '<xsl:value-of select="usr" />'
 				}
@@ -120,7 +122,7 @@
 		    waitUntilOpenEMapIsDefined();
     
 		</script>
-		<div id="mapContent" style="position: absolute; left: 0; right: 0;"></div>
+		<div id="mapContent" style="position: absolute; left: 0; right: 0; width: 100%; height: 100%;"></div>
 		<div id="showcoordinate" style="position: absolute; bottom: 0px; left: 10px;" ></div>
 	</xsl:template>
 </xsl:stylesheet>

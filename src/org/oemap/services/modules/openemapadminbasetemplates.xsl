@@ -6,7 +6,7 @@
 	<xsl:template match="Document">
 	
 	<script type="text/javascript">
-		var appPath = '/openemapadmin-1.6.0-rc.5';
+		var appPath = '<xsl:value-of select="/Document/requestinfo/contextpath" />';
 		var gisServer = '<xsl:value-of select="gisServer" />';
 		var wmsServer = gisServer + '<xsl:value-of select="wmsServer" />';
 		var wmsGetCapabilities = gisServer + '<xsl:value-of select="wmsGetCapabilities" />';
