@@ -47,6 +47,7 @@ public class OpenEmapBeanFactory<T> {
 
 	private ObjectMapper mapper;
 	private ObjectWriter filteredWriter;
+	private ObjectWriter unfilteredWriter;
 	private RestResponseObject response;
 
 	public OpenEmapBeanFactory() throws InstantiationException,
@@ -56,12 +57,11 @@ public class OpenEmapBeanFactory<T> {
 		
 		FilterProvider filters = new SimpleFilterProvider().addFilter("listFilter",
 				SimpleBeanPropertyFilter.filterOutAllExcept("configId", "name", "username", "isPublic"));
-//		filters.addFilter("listAll",
-//				SimpleBeanPropertyFilter.filterOutAllExcept("configId", "name", "username", "isPublic", "resolutions", "search", "attribution", "version", "maxExtent", "extent", "autoClearDrawLayer", "drawStyles", "tools", "layers", "units", "projection", "options"));
 		filteredWriter = mapper.writer(filters);
-//		FilterProvider filters = new SimpleFilterProvider().addFilter("listAll",
-//		SimpleBeanPropertyFilter.filterOutAllExcept("configId", "name", "username", "isPublic", "resolutions", "search", "attribution", "version", "maxExtent", "extent", "autoClearDrawLayer", "drawStyles", "tools", "layers", "units", "projection", "options"));
-//		filteredWriter = mapper.writer(filters);
+
+		SimpleFilterProvider unfilter = new SimpleFilterProvider();
+		unfilter.setFailOnUnknownId(false);
+		unfilteredWriter = mapper.writer(unfilter);
 	};
 
 	public void setRestResponseObject(boolean success, Integer id,
@@ -149,17 +149,17 @@ public class OpenEmapBeanFactory<T> {
 
 	public String getJSON(RestResponseObject response)
 			throws JsonGenerationException, JsonMappingException, IOException {
-		return this.mapper.writeValueAsString(response);
+		return this.unfilteredWriter.writeValueAsString(response);
 	}
 
 	public String createJSON(T bean) throws JsonGenerationException,
 			JsonMappingException, IOException {
-		return this.mapper.writeValueAsString(bean);
+		return this.unfilteredWriter.writeValueAsString(bean);
 	}
 
 	public String createJSON(List<T> beans) throws JsonGenerationException,
 			JsonMappingException, IOException {
-		return this.mapper.writeValueAsString(beans);
+		return this.unfilteredWriter.writeValueAsString(beans);
 	}
 	
 	public String createConfigListJSON(List<T> configs) throws JsonGenerationException,

@@ -33,7 +33,7 @@ import se.unlogic.standardutils.dao.annotations.Table;
 import se.unlogic.standardutils.xml.XMLElement;
 
 @Table(name = "oemapadmin_config") 
-//@JsonFilter("listFilter")
+@JsonFilter("listFilter")
 public class Config extends ConfigBase {
 
 	@XMLElement

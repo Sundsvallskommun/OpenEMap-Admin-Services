@@ -67,9 +67,21 @@ public class PublicConfigModule extends AnnotatedRESTModule {
 	 */
 	@Override
 	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse defaultMethod(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
-		List<Config> config = configDAO.getAll();
+		List<Config> configs = configDAO.getAll();
+		List<Config> filteredConfigs = new ArrayList<Config>();
+		
+		for (Config config : configs){
+			String configName = config.getName();
+			if (configName.equalsIgnoreCase("default")) 
+				continue;
+			
+			if (config.getIsPublic()){
+				filteredConfigs.add(config);
+			}
+		}
+
 		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
-		String json = configFactory.createJSON(config);
+		String json = configFactory.createJSON(filteredConfigs);
 		HTTPUtils.sendReponse(json, res);
 		return null;
 	};
@@ -87,8 +99,19 @@ public class PublicConfigModule extends AnnotatedRESTModule {
 	@WebPublic(alias = "configlist")
 	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse getConfigList(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
 		List<Config> configs = configDAO.getAll();
+		List<Config> filteredConfigs = new ArrayList<Config>();
+		
+		for (Config config : configs){
+			String configName = config.getName();
+			if (configName.equalsIgnoreCase("default")) 
+				continue;
+			
+			if (config.getIsPublic()){
+				filteredConfigs.add(config);
+			}
+		}
 		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
-		String json = configFactory.createConfigListJSON(configs);
+		String json = configFactory.createConfigListJSON(filteredConfigs);
 		HTTPUtils.sendReponse(json, res);
 		return null;
 	};

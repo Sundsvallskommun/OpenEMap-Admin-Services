@@ -128,6 +128,16 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 		return null;
 	};
 
+	@WebPublic(alias = "listall")
+	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse getConfigListAll(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
+		List<Config> configs = configDAO.getAll();
+		
+		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
+		String json = configFactory.createConfigListJSON(configs);
+		HTTPUtils.sendReponse(json, res);
+		return null;
+	};
+
 	/**
 	 *Returns a specific configuration 
 	 *

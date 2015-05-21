@@ -165,7 +165,7 @@ Ext.define('OpenEMap.action.DeleteMeasure', {
             }
         });
 
-        config.iconCls = config.iconCls || 'action-deletegeometry';
+        config.iconCls = config.iconCls || 'action-deletemeasure';
         config.tooltip = config.tooltip || 'Ta bort m&auml;tning(ar).';
         
         this.callParent(arguments);
@@ -523,15 +523,16 @@ Ext.define('OpenEMap.action.DrawGeometry', {
         });
         
                 
-        config.iconCls = config.iconCls || 'action-drawgeometry';
-       
        	if (!config.tooltip){
        		config.tooltip = config.geometry === 'Polygon' ? 'Rita område' :
          		config.geometry === 'Path' ? 'Rita linje' :
          		config.geometry === 'Point' ? 'Rita punkt' : 'Rita geometri';
-         		
+         	config.iconCls = config.geometry === 'Polygon' ? 'action-drawpolygon' :
+         		config.geometry === 'Path' ? 'action-drawline' :
+         		config.geometry === 'Point' ? 'action-drawpoint' : 'action-drawgeometry';
          	if (this.isText(config)){
          		config.tooltip = 'Placera ut text.';	
+         		config.iconCls = 'action-drawtext';
          	}
        	}
         config.toggleGroup = 'extraTools';
@@ -1890,7 +1891,7 @@ Ext.define('OpenEMap.action.Permalink', {
         });
         
         config.iconCls = config.iconCls || 'action-permalink';
-        config.tooltip = config.tooltip || 'Generera permalink';
+        config.tooltip = config.tooltip || 'Skapa länk till kartan';
         
         this.callParent(arguments);
     },
@@ -1912,7 +1913,7 @@ Ext.define('OpenEMap.action.Permalink', {
         });
     },
     createWindow: function(id) {
-        var url = document.location.origin + OpenEMap.wsUrls.permalinkclient + '?permalink=' + id;
+	 	var url = document.location.protocol + '//'+ document.location.host + document.location.pathname + '?permalink=' + id;
         var label = '<a href="' + url + '" target="_blank">' + url + '</a>';
     
         if (this.w) {
@@ -5083,7 +5084,7 @@ Ext.define('OpenEMap.data.SavedMapConfigs' ,{
             type: 'rest',
             appendId: true,
 	        url: ((OpenEMap && OpenEMap.wsUrls && OpenEMap.wsUrls.basePath) ? OpenEMap.wsUrls.basePath : '') + 
-	        		((OpenEMap && OpenEMap.wsUrls && OpenEMap.wsUrls.configs) ? OpenEMap.wsUrls.configs : ''),
+	        		((OpenEMap && OpenEMap.wsUrls && OpenEMap.wsUrls.adminconfigs) ? OpenEMap.wsUrls.adminconfigs : '') + '/configlist',
             reader: {
                 type: 'json',
                 root: 'configs'
@@ -8871,7 +8872,6 @@ Ext.apply(OpenEMap, {
      * @property {string} [wsUrls.configs] relative path to publig configs within Open eMap Admin services
      * @property {string} [wsUrls.adminconfigs] path to admin config service within Open eMap Admin services 
      * @property {string} [wsUrls.permalinks] path to Open eMap Permalink service 
-     * @property {string} [wsUrls.permalinkclient] path to HTML-page that the permalink should point to 
      * @property {string} [wsUrls.metadata]  path to Open eMap Geo Metadata service
      * @property {string} [wsUrls.metadataAbstract] path to Open eMap Geo Metadata Abstract service
      * @property {string} [wsUrls.servers] unused
@@ -8880,8 +8880,7 @@ Ext.apply(OpenEMap, {
     wsUrls: {
         basePath:   	'/openemapadmin',
         permalinks:     '/openemappermalink/permalinks',
-        permalinkclient:'index.html',
-        configs:    	'/configs',
+        configs:    	'/configs/listconfig',
         adminconfigs: 	'/adminconfigs',
         servers:    	'settings/servers',
         layers:     	'layers/layers',
