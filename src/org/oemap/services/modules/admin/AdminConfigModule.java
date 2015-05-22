@@ -81,6 +81,14 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 	
 	/**
 	 * Default method for all http requests
+	 * Returns a complete list of configs that are either created by specified user or is public. 
+	 * Includes all configdata 
+	 * @param req
+	 * @param res
+	 * @param user
+	 * @param uriParser
+	 * @return
+	 * @throws Throwable
 	 */
 	@Override
 	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse defaultMethod(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
@@ -105,6 +113,16 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 		return null;
 	};
 
+	/**
+	 * Returns a short list of all public configs
+	 * Includes only id, name, username and isPublic
+	 * @param req
+	 * @param res
+	 * @param user
+	 * @param uriParser
+	 * @return
+	 * @throws Throwable
+	 */
 	@WebPublic(alias = "configlist")
 	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse getConfigList(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
 		List<Config> configs = configDAO.getAll();
@@ -128,6 +146,16 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 		return null;
 	};
 
+	/**
+	 * Returns a short list of all configs, both public and non-public
+	 * Includes only id, name, username and isPublic
+	 * @param req
+	 * @param res
+	 * @param user
+	 * @param uriParser
+	 * @return
+	 * @throws Throwable
+	 */
 	@WebPublic(alias = "listall")
 	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse getConfigListAll(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
 		List<Config> configs = configDAO.getAll();
@@ -139,15 +167,14 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 	};
 
 	/**
-	 *Returns a specific configuration 
-	 *
-	 * 
+	 * Returns a specific configuration 
+	 * Includes all configdata 
 	 * @param req
 	 * @param res
 	 * @param user
 	 * @param uriParser
 	 * @param id
-	 * @return a configuration
+	 * @return a complete configuration
 	 * @throws Throwable
 	 */
 	@RESTMethod(alias = "config/{id}", method = "get")

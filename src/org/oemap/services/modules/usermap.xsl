@@ -97,8 +97,6 @@
 				        adminconfigs: 	'/adminconfigs',  
 				        // path to permalinks
 				        permalinks:     '<xsl:value-of select="permalinkService" />',
-				        //path to html-file used for opening permalinks 
-				        permalinkclient:'<xsl:value-of select="/Document/requestinfo/contextpath" /><xsl:value-of select="permalinkURL" />',
 				        // path to metadata services
 				        metadata:   	'<xsl:value-of select="metadata" />', 
 				        metadata_abstract: '<xsl:value-of select="metadataAbstract" />'

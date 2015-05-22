@@ -63,7 +63,15 @@ public class PublicConfigModule extends AnnotatedRESTModule {
 	}
 	
 	/**
-	 * Returns all the lists
+	 * Default method for all http requests
+	 * Returns a complete list of public configs, including all configdata 
+	 * Includes all configdata 
+	 * @param req
+	 * @param res
+	 * @param user
+	 * @param uriParser
+	 * @return
+	 * @throws Throwable
 	 */
 	@Override
 	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse defaultMethod(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
@@ -96,6 +104,17 @@ public class PublicConfigModule extends AnnotatedRESTModule {
 				Integer.class);
 	}
 
+
+	/**
+	 * Returns a short list of all public configs 
+	 * Includes only id, name, username and isPublic
+	 * @param req
+	 * @param res
+	 * @param user
+	 * @param uriParser
+	 * @return
+	 * @throws Throwable
+	 */
 	@WebPublic(alias = "configlist")
 	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse getConfigList(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
 		List<Config> configs = configDAO.getAll();
@@ -117,7 +136,28 @@ public class PublicConfigModule extends AnnotatedRESTModule {
 	};
 
 	/**
-	 * Returns a specific list
+	 * Returns a short list of all configs, both public and non-public
+	 * Includes only id, name, username and isPublic
+	 * @param req
+	 * @param res
+	 * @param user
+	 * @param uriParser
+	 * @return
+	 * @throws Throwable
+	 */
+	@WebPublic(alias = "listall")
+	public se.unlogic.hierarchy.core.interfaces.ForegroundModuleResponse getConfigListAll(HttpServletRequest req, HttpServletResponse res, User user, URIParser uriParser) throws Throwable {
+		List<Config> configs = configDAO.getAll();
+		
+		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
+		String json = configFactory.createConfigListJSON(configs);
+		HTTPUtils.sendReponse(json, res);
+		return null;
+	};
+
+	/**
+	 * Returns a specific config
+	 * Includes all configdata 
 	 * @param req
 	 * @param res
 	 * @param user

@@ -74,10 +74,6 @@ public class UserMap extends AnnotatedForegroundModule {
     protected String permalinkService = "/openemappermalink-1.6.0/permalinks";
 
 	@ModuleSetting
-    @TextFieldSettingDescriptor(name = "Permalink page", description = "URL to use when opening the permalink")
-    protected String permalinkURL = "/usermap";
-
-	@ModuleSetting
     @TextFieldSettingDescriptor(name = "Metadata service", description = "URL to metadata service")
     protected String metadata = "geometadata/getmetadatabyid";
 
@@ -116,7 +112,6 @@ public class UserMap extends AnnotatedForegroundModule {
 		XMLUtils.appendNewElement(doc, document, "wmtsServer", wmtsServer);
 		XMLUtils.appendNewElement(doc, document, "adminproxy", adminproxy);
 		XMLUtils.appendNewElement(doc, document, "permalinkService", permalinkService);
-		XMLUtils.appendNewElement(doc, document, "permalinkURL", permalinkURL);
 		XMLUtils.appendNewElement(doc, document, "metadata", metadata);
 		XMLUtils.appendNewElement(doc, document, "metadataAbstract", metadataAbstract);
 		
