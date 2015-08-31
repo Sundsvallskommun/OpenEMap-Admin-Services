@@ -8,8 +8,8 @@
 (function() {
     var major = 2,
         minor = 0,
-        patch = 2,
-        label = '',
+        patch = 3,
+        label = 'dev',
         environment = [],
         v = '';
 
@@ -71,7 +71,7 @@
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -1128,7 +1128,7 @@ Ext.define('GeoExt.FeatureRenderer', {
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -1411,6 +1411,192 @@ Ext.define('GeoExt.LegendImage', {
  */
 
 /**
+ * A component encapsulating an OpenLayers.Control.OverviewMap control.
+ *
+ * When you use this component in an application, make sure to include the
+ * stylesheet 'overviewmap.css' or add the following to your own stylesheet.
+ *
+ * <code>
+ * .gx-overview-map .olControlOverviewMapElement { padding: 0; }
+ * </code>
+ *
+ * @class GeoExt.OverviewMap
+ */
+Ext.define('GeoExt.OverviewMap', {
+    extend:  Ext.Component ,
+    alias: 'widget.gx_overviewmap',
+               
+                        
+      
+
+    /**
+     * Custom CSS class added to this components #cls.
+     *
+     * @property {String}
+     */
+    ovCls: 'gx-overview-map',
+
+    /**
+     * The OpenLayers.Map that this overview is bound to. If not set by the user
+     * a gx_mappanel's map will be guessed.
+     *
+     * @cfg {OpenLayers.Map}
+     */
+    map: null,
+
+    /**
+     * If set to true the overview will be reinitialized on "baselayerchange"
+     * events of its bound map.
+     * This can be used to make sure that the overview shows the same baselayer
+     * as the map.
+     *
+     * @cfg {Boolean}
+     */
+    dynamic: false,
+
+    /**
+     * The overview options that the underlying OpenLayers.Control.OverviewMap
+     * will be initialized with. Following settings are defaults and should
+     * generally not be overridden:
+     *
+     * - "div" configuration will default to the containers DOM element
+     * - "size" will default to the containers actual dimensions
+     * - "maximized" will always be true to make the overview visible
+     *
+     * If you want to hide the overview map, simple use the components show/hide
+     * methods.
+     *
+     * @cfg {Object}
+     */
+    overviewOptions: null,
+
+    /**
+     * Reference to the OpenLayers.Control.OverviewMap control.
+     *
+     * @property @readonly {OpenLayers.Control.OverviewMap}
+     */
+    ctrl: null,
+
+    initComponent: function() {
+        if (!this.map) {
+            this.map = GeoExt.panel.Map.guess().map;
+        }
+
+        // add gx class making sure it won't be overridden on accident
+        this.addCls(this.ovCls);
+
+        // bind to the components lifecycle events to make sure the overview is
+        // added and removed from the map when the component is (in-)visible.
+        this.on({
+            'show': this.reinitControl,
+            'resize': this.reinitControl,
+            'hide': this.destroyControl,
+            scope: this
+        });
+
+        if (this.dynamic) {
+            this.map.events.on({
+                changebaselayer: this.reinitControl,
+                scope: this
+            });
+        }
+
+        this.callParent();
+    },
+
+    /**
+     * Destroys the encapsulated OpenLayers.Control.OverviewMap removing it from
+     * the map controls and unbinds all events from this component.
+     * Deletes the components ctrl, map and overviewOptions members.
+     *
+     * @private
+     */
+    destroy: function() {
+        this.destroyControl();
+
+        this.un({
+            'show': this.reinitControl,
+            'resize': this.reinitControl,
+            'hide': this.destroyControl,
+            scope: this
+        });
+
+        this.map.events.un({
+            changebaselayer: this.onChangeBaseLayer,
+            scope: this
+        });
+
+        delete this.ctrl;
+        delete this.map;
+        delete this.overviewOptions;
+
+        this.callParent(arguments);
+    },
+
+    /**
+     * Helper method that refers to the private initControl and destroyControl
+     * methods to force an update of the overview map by bluntly creating a new one.
+     * This can be called to update the map after setting new #overviewOptions.
+     */
+    reinitControl: function() {
+        this.destroyControl();
+        this.initControl();
+    },
+
+    /**
+     * Initializes an OpenLayers.Control.OverviewMap control adding it to the
+     * configured map.
+     *
+     * @private
+     */
+    initControl: function() {
+        var map = this.map,
+            size = this.getSize(),
+            options = Ext.apply({
+                div: this.getEl().dom,
+                size: new OpenLayers.Size(size.width, size.height),
+                maximized: true
+            }, this.overviewOptions),
+            baselayer;
+
+        // If map is configured with allOverlays as true and layers option is
+        // not set by user, the overview control will fail on construction.
+        // This is to determine any layer to be shown in overview map.
+        if (map.allOverlays) {
+            if (!options.layers && map.layers && map.layers.length > 0) {
+                baselayer = map.layers[0].clone();
+                baselayer.setIsBaseLayer(true);
+                options.layers = [ baselayer ];
+            }
+        }
+
+        this.ctrl = new OpenLayers.Control.OverviewMap(options);
+        map.addControl(this.ctrl);
+    },
+
+    /**
+     * Destroys the OpenLayers.Control.OverviewMap control after removing it
+     * from this components bound map.
+     *
+     * @private
+     */
+    destroyControl: function() {
+        if (this.ctrl && (this.ctrl instanceof OpenLayers.Control.OverviewMap)) {
+            this.map.removeControl(this.ctrl);
+            this.ctrl.destroy();
+        }
+    }
+});
+
+/*
+ * Copyright (c) 2008-2014 The Open Source Geospatial Foundation
+ *
+ * Published under the BSD license.
+ * See https://github.com/geoext/geoext2/blob/master/license.txt for the full
+ * text of the license.
+ */
+
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -2977,7 +3163,12 @@ Ext.define('GeoExt.data.reader.Attribute', {
             if (this.keepRaw) {
                 this.raw = result;
             }
-            attributes = result.featureTypes[0].properties;
+            
+                if (Object.keys(result).length === 0){
+                    return null;
+                }
+                attributes = result.featureTypes[0].properties;
+            
         }
         var feature = this.feature;
         var fields = this.model.prototype.fields;
@@ -3088,7 +3279,7 @@ Ext.define('GeoExt.data.AttributeModel', {
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -3234,6 +3425,23 @@ Ext.define('GeoExt.data.AttributeStore', {
     config: {
         /**
          * The ignore object passed to the reader.
+         *
+         *     // ... ignore attributes of certain type or with specified name:
+         *     var ignoreObj = {
+         *         type: [
+         *             'gml:GeometryPropertyType',
+         *             'gml:PointPropertyType',
+         *             'gml:LineStringPropertyType',
+         *             'gml:SurfacePropertyType',
+         *             'gml:MultiPointPropertyType',
+         *             'gml:MultiLineStringPropertyType',
+         *             'gml:MultiSurfacePropertyType'
+         *         ],
+         *         name: [
+         *             'id',
+         *             'another_ignored_attr'
+         *         ]
+         *     };
          *
          * @cfg {Object}
          */
@@ -4041,7 +4249,7 @@ Ext.define('GeoExt.data.FeatureStore', {
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -5748,6 +5956,18 @@ Ext.define('GeoExt.panel.Map', {
 
     /**
      * A configured map or a configuration object for the map constructor.
+     *
+     * In most cases you will want your map to be configured with
+     * `fallThrough: true`, as other settings affect the dragging behaviour of
+     * overlayed `Ext.window.Window` instances in negative way. Such windows
+     * cannot be smoothly dragged over the the map panel. If you do not provide
+     * a map or map configuration object, the auto-created map will be
+     * configured with `fallThrough` being `true`.
+     *
+     * Having `fallThrough` being `false` is a misconfiguration most of the
+     * time, which is why we will issue a warning to the developer console if we
+     * detect this setting.
+     *
      * A configured map will be available after construction through the
      * {@link GeoExt.panel.Map#property-map} property.
      *
@@ -5818,6 +6038,15 @@ Ext.define('GeoExt.panel.Map', {
      * none was provided in the config options passed to the
      * constructor.
      *
+     * Such an auto-created map will be configured with
+     *
+     *     {
+     *         allOverlays: true,
+     *         fallThrough: true
+     *     }
+     *
+     * See {@link GeoExt.panel.Map#cfg-map} for an explanation why we do this.
+     *
      * @private
      */
     initComponent: function(){
@@ -5828,6 +6057,10 @@ Ext.define('GeoExt.panel.Map', {
                     fallThrough: true
                 })
             );
+        }
+
+        if (this.map.fallThrough !== true) {
+            this.warnMapFallThrough();
         }
 
         var layers  = this.layers;
@@ -5910,6 +6143,23 @@ Ext.define('GeoExt.panel.Map', {
             "addlayer": this.onAddlayer,
             "removelayer": this.onRemovelayer,
             scope: this
+        });
+    },
+
+    /**
+     * Logs a warning to the console (if one is present) that tells the user to
+     * set the `fallThrough` property of an OpenLayers.Map to true when this map
+     * is being used inside of a GeoExt.panel.Map.
+     *
+     * @private
+     */
+    warnMapFallThrough: function(){
+        Ext.log({
+            level: 'warn',
+            msg: 'It is recommended to construct a GeoExt.panel.Map with' +
+                ' OpenLayers.Map#fallThrough == true. This way dragging' +
+                ' interactions with floating components (e.g.' +
+                ' Ext.window.Window) on top of the map are smoother.'
         });
     },
 
@@ -6087,12 +6337,10 @@ Ext.define('GeoExt.panel.Map', {
         me.center = new OpenLayers.LonLat(state.x, state.y);
         me.zoom = state.zoom;
 
-        // TODO refactor with me.layers.each
         // set layer visibility and opacity
-        var i, l, layer, layerId, visibility, opacity;
-        var layers = map.layers;
-        for(i=0, l=layers.length; i<l; i++) {
-            layer = layers[i];
+        var layer, layerId, visibility, opacity;
+        me.layers.each(function(layerRec) {
+            layer = layerRec.getLayer();
             layerId = me.prettyStateKeys ? layer.name : layer.id;
             visibility = state["visibility_" + layerId];
             if(visibility !== undefined) {
@@ -6110,7 +6358,7 @@ Ext.define('GeoExt.panel.Map', {
             if(opacity !== undefined) {
                 layer.setOpacity(opacity);
             }
-        }
+        });
     },
 
     /**
@@ -6592,7 +6840,7 @@ Ext.define('GeoExt.data.RasterStyleModel',{
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -6971,8 +7219,19 @@ Ext.define('GeoExt.data.reader.WfsCapabilities', {
         var featureType, metadata, field, v, parts, layer;
         var layerOptions, protocolOptions;
 
+        var wfs11version = 1.1,
+            url,
+            opMeta;
+        if (parseFloat(data.version) >= wfs11version) {
+            // WFS 1.1.0 needs special treatment
+            opMeta = data.operationsMetadata;
+            url = opMeta && opMeta.GetFeature.dcp.http.post[0].url;
+        } else {
+            url = data.capability.request.getfeature.href.post;
+        }
+
         var protocolDefaults = {
-            url: data.capability.request.getfeature.href.post
+            url: url
         };
 
         var records = [];
@@ -7005,7 +7264,8 @@ Ext.define('GeoExt.data.reader.WfsCapabilities', {
                 layerOptions = {
                     metadata: metadata,
                     protocol: new OpenLayers.Protocol.WFS(protocolOptions),
-                    strategies: [new OpenLayers.Strategy.Fixed()]
+                    strategies: [new OpenLayers.Strategy.Fixed()],
+                    projection: featureType.srs
                 };
                 var metaLayerOptions = this.layerOptions;
                 if (metaLayerOptions) {
@@ -10590,7 +10850,7 @@ Ext.define('GeoExt.selection.FeatureModel', {
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -11117,7 +11377,7 @@ Ext.define('GeoExt.slider.LayerOpacity', {
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -11555,7 +11815,7 @@ Ext.define('GeoExt.slider.Zoom', {
  *     });
  *     // display permalink each time state is changed
  *     permalinkProvider.on({
- *         statechanged: function(provider, name, value) {
+ *         statechange: function(provider, name, value) {
  *             alert(provider.getLink());
  *         }
  *     });
@@ -11664,7 +11924,7 @@ Ext.define('GeoExt.state.PermalinkProvider', {
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -12330,7 +12590,7 @@ Ext.define('GeoExt.tree.BaseLayerContainer', {
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -12447,7 +12707,7 @@ Ext.define('GeoExt.tree.OverlayLayerContainer', {
  * text of the license.
  */
 
-/**
+/*
  * @requires GeoExt/Version.js
  */
 
@@ -12808,7 +13068,6 @@ Ext.define('GeoExt.window.Popup', {
         if(this.anchored) {
             this.addAnchorEvents();
         }
-
         this.elements += ',anc';
 
         this.callParent(arguments);
@@ -12825,7 +13084,9 @@ Ext.define('GeoExt.window.Popup', {
     onRender: function(ct, position) {
         this.callParent(arguments);
         this.addCls(this.popupCls);
-        this.ancCls = this.popupCls + "-anc";
+        if (!this.ancCls) {
+        	this.ancCls = this.popupCls + "-anc";
+        }
 
         //create anchor dom element.
         //this.createElement("anc", this.el.dom);
@@ -12943,7 +13204,7 @@ Ext.define('GeoExt.window.Popup', {
                 // left
                 this.anc.removeCls("right");
                 var ancLeft = this.anc.getLeft(true);
-                left -= ancLeft + ancSize.width / 2;
+                left -= ancLeft + this.getBorderPadding().beforeY + ancSize.width / 2;
             }
 
             if (ancPos.indexOf("bottom") > -1 || locationPx.y > mapBox.height / 2) {
@@ -12952,16 +13213,15 @@ Ext.define('GeoExt.window.Popup', {
                 // position the anchor
                 var popupHeight = this.getHeight();
                 if (isNaN(popupHeight) === false) {
-                    this.anc.setTop((popupHeight-1) + "px");
+                    this.anc.setTop((popupHeight-1-this.getBorderPadding().afterX) + "px");
                 }
-
                 top -= elSize.height + ancSize.height;
 
             } else {
                 // top
-                this.anc.addCls("top");
+                this.anc.removeCls("top");
                 // remove eventually set top property (bottom-case)
-                this.anc.setTop("");
+                this.anc.setTop(-ancSize.height-1-this.getBorderPadding().beforeX + "px");
                 top += ancSize.height; // ok
             }
 

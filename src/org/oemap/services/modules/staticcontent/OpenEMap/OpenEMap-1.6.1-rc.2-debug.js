@@ -2701,6 +2701,7 @@ Ext.define('OpenEMap.view.Map' ,{
         this.map.setLayerIndex(this.measureLayerSegments, 98);
         
         this.selectControl = new OpenLayers.Control.SelectFeature(this.drawLayer);
+        this.selectControl.handlers.feature.stopDown = false;
         this.map.addControl(this.selectControl);
 
         // Define container for popup windows - initialize when first popupLayer is created. 
@@ -3481,10 +3482,17 @@ Ext.define('OpenEMap.view.SearchFastighet', {
             } ]
         });
         
+        // Creating selectControl to make it stopDown, which will make mousedown event available to other handlers too
+        // thus making map panable even when grabbing inside a feature 
+        var selectControl = new OpenLayers.Control.SelectFeature(this.mapPanel.searchLayer);
+        selectControl.handlers.feature.stopDown = false;
+        this.mapPanel.map.addControl(selectControl);
+        var selectionModel = Ext.create('GeoExt.selection.FeatureModel', {selectControl: selectControl});
+        
         var grid = Ext.create('Ext.grid.Panel', {
             columns : columns,
             store : store,
-            selType : 'featuremodel'
+            selModel : selectionModel
         });
         
         function defSearchCombo(type) {
@@ -3919,7 +3927,8 @@ Ext.define('OpenEMap.data.GroupedLayerTree' ,{
         } else if (node.raw.wms && node.raw.wms.params && (node.raw.wms.params.LAYERS || node.raw.wms.params.layers)) {
             var layerRecord = GeoExt.data.LayerModel.createFromLayer(layer);
             var legend = Ext.create('GeoExt.container.WmsLegend', {
-                layerRecord: layerRecord
+                layerRecord: layerRecord,
+                useScaleParameter: false
             });
             url = legend.getLegendUrl(node.raw.wms.params.LAYERS || node.raw.wms.params.layers);
         }
@@ -4158,7 +4167,8 @@ Ext.define('OpenEMap.view.layer.Tree' ,{
                 } else if (node.raw.wms && (node.raw.wms.params.LAYERS || node.raw.wms.params.layers)) {
                     var layerRecord = GeoExt.data.LayerModel.createFromLayer(layer);
                     var legend = Ext.create('GeoExt.container.WmsLegend', {
-                        layerRecord: layerRecord
+                        layerRecord: layerRecord,
+                        useScaleParameter: false
                     });
                     url = legend.getLegendUrl(node.raw.wms.params.LAYERS || node.raw.wms.params.layers);
                 }
@@ -5537,6 +5547,7 @@ Ext.define('OpenEMap.Gui', {
             this.gui = {};
         }
         if (this.gui.map === undefined) {this.gui.map = false;}
+        if (this.gui.map === {}) {this.gui.map = false;}
         if (this.gui.layerControl === undefined) {this.gui.layerControl = {};}
         if (this.gui.addLayerControl === undefined) {this.gui.addLayerControl = {};}
 //        if (this.gui.rightPanel === undefined) {this.gui.rightPanel = {};}
@@ -5791,6 +5802,13 @@ Ext.define('OpenEMap.Gui', {
 			 		})
 				});
 
+	        } else if (this.gui.layers && this.gui.layers.type === 'listconfigs') { 
+	            this.mapLayers = Ext.create('OpenEMap.view.layer.Advanced', Ext.apply({
+	                mapPanel : this.mapPanel,
+	                orginalConfig: this.orginalConfig,
+	                client: this.client,
+	                flex: 1
+	            }, this.gui.layers));
 	        } else {
 	            this.mapLayers = Ext.create('OpenEMap.view.layer.Basic', Ext.apply({
 	                mapPanel : this.mapPanel,
@@ -5969,14 +5987,13 @@ Ext.define('OpenEMap.Gui', {
                 cls : this.cls,
 			    setCoord: function(e) {
 			    	var lonlat = this.getLonLatFromPixel(e.xy);
-			    	var eC = parent.mapClient.gui.showCoordinate.getComponent('e');
-			    	var nC = parent.mapClient.gui.showCoordinate.getComponent('n');
+			    	var eC = OpenEMap.mapClient.gui.showCoordinate.getComponent('e');
+			    	var nC = OpenEMap.mapClient.gui.showCoordinate.getComponent('n');
 			    	eC.setValue(Math.round(lonlat.lon));
 			    	nC.setValue(Math.round(lonlat.lat));
 			    }
         	};
             this.showCoordinate = Ext.create('OpenEMap.view.ShowCoordinate', Ext.apply(cfg, this.gui.showCoordinate));
-
 		    this.map.events.register("mousemove", this.map, this.showCoordinate.setCoord);
         }
 	},
@@ -8336,7 +8353,7 @@ Ext.define('OpenEMap.Client', {
                                             
                                                            
                                                              
-    version: '1.6.0-rc.5',
+    version: '1.6.1-rc.2',
     /**
      * OpenLayers Map instance
      * 
@@ -8394,7 +8411,7 @@ Ext.define('OpenEMap.Client', {
      * 
      * @property {OpenLayers.Layer.Vector}
      */
-    drawLayer: null,
+    drawLayer: undefined,
     /**
      * Configure map
      * 
@@ -8541,8 +8558,9 @@ Ext.define('OpenEMap.Client', {
                     var style = Ext.applyIf(Ext.clone(styleOverride), {
                         label: lineString.getLength().toFixed(accuracy).toString() + " m",
                         strokeColor: "#000000",
-                        strokeWidth: 3,
-                        labelAlign: 'cm'
+                        strokeWidth: 0,
+                        labelAlign: 'cm',
+                        pointRadius: 0
                     });
                     var feature = new OpenLayers.Feature.Vector(centroid, null, style);
                     return feature;
@@ -8564,7 +8582,7 @@ Ext.define('OpenEMap.Client', {
             }
         };
         
-        if (this.labelLayer === null) {
+        if (this.labelLayer === undefined) {
             this.labelLayer = new OpenLayers.Layer.Vector();
             this.map.addLayer(this.labelLayer);
             
