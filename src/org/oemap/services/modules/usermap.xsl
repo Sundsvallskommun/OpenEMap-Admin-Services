@@ -62,12 +62,13 @@
 					},
 					baseLayers : {},
 					searchFastighet : {},
-//					showCoordinate: {renderTo: 'showcoordinate'},
+					showCoordinate: {renderTo: 'showcoordinate'},
+	    			searchCoordinate: {renderTo: 'searchcoordinate'},
 					scalebar: {}
 				},
 				OpenEMap: {
 					// Base path to be used for mapfish print servlet requests
-				    basePathMapFish: '/print/pdf', 
+				    basePathMapFish: '/mapfishprint-2.1.1/pdf', 
 				    // Base path to be used for all AJAX requests against search-lm REST API
 				    basePathLM: '/search/lm/', 
 				    // name of user to be used when calling search-lm REST API
@@ -122,5 +123,6 @@
 		</script>
 		<div id="mapContent" style="position: absolute; left: 0; right: 0; width: 100%; height: 100%;"></div>
 		<div id="showcoordinate" style="position: absolute; bottom: 0px; left: 10px;" ></div>
+		<div id="searchcoordinate" style="position: absolute; left: 150px; bottom: 0px;" ></div>
 	</xsl:template>
 </xsl:stylesheet>

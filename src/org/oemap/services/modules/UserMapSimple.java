@@ -46,26 +46,6 @@ public class UserMapSimple extends AnnotatedForegroundModule {
 	protected boolean debug = false;
 	
 	@ModuleSetting
-    @TextFieldSettingDescriptor(name = "GIS Server", description = "Base URL to GIS Server. (eg. https://extmap.sundsvall.se")
-    protected String gisServer = "https://extmaptest.sundsvall.se";
-	
-	@ModuleSetting
-    @TextFieldSettingDescriptor(name = "WMS Server", description = "Context path to WMS endpoint on GIS server (eg. /geoserver/wms")
-    protected String wmsServer = "/geoserver/wms";
-	
-	@ModuleSetting
-    @TextFieldSettingDescriptor(name = "WMS Server Getcapabilities URL", description = "Context path to Getcapabilities used when listing layers in advanced layer control and admin. (eg /geoserver/wms?request=GetCapabilities&version=1.1.1")
-    protected String wmsGetCapabilities = "/capababilities/wms.xml";
-	
-	@ModuleSetting
-    @TextFieldSettingDescriptor(name = "WFS Server", description = "Context path to WFS endpoint on GIS server (eg. /geoserver/wfs")
-    protected String wfsServer = "/geoserver/wfs";
-	
-	@ModuleSetting
-    @TextFieldSettingDescriptor(name = "WMTS Server", description = "Context path to WMTS endpoint on GIS server (eg. /geoserver/gwc/service/wms")
-    protected String wmtsServer = "/geoserver/gwc/service/wms";
-	
-	@ModuleSetting
     @TextFieldSettingDescriptor(name = "Alias for proxy", description = "Alias set in admin proxy.")
     protected String adminproxy = "adminproxy";
 
@@ -105,11 +85,6 @@ public class UserMapSimple extends AnnotatedForegroundModule {
 		
 		XMLUtils.appendNewElement(doc, document, "debug", debug);
 		XMLUtils.appendNewElement(doc, document, "usr", usr);
-		XMLUtils.appendNewElement(doc, document, "gisServer", gisServer);
-		XMLUtils.appendNewElement(doc, document, "wmsServer", wmsServer);
-		XMLUtils.appendNewElement(doc, document, "wmsGetCapabilities", wmsGetCapabilities);
-		XMLUtils.appendNewElement(doc, document, "wfsServer", wfsServer);
-		XMLUtils.appendNewElement(doc, document, "wmtsServer", wmtsServer);
 		XMLUtils.appendNewElement(doc, document, "adminproxy", adminproxy);
 		XMLUtils.appendNewElement(doc, document, "permalinkService", permalinkService);
 		XMLUtils.appendNewElement(doc, document, "metadata", metadata);

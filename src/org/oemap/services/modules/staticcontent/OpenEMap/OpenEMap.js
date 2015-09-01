@@ -132,26 +132,27 @@ var loadJsScripts = function(files, scriptCallback, scriptCallbackDependencies) 
     }
 	
 	if (typeof debug !== "undefined" && debug === 'source') {
+		devPath = devPath || '';
 		cssFiles = [
-			"../bower_components/ext-theme-oep/build/resources/ext-theme-oep-all-debug.css",
-			"../resources/css/OpenEMap.css"
+			devPath + "bower_components/ext-theme-oep/build/resources/ext-theme-oep-all-debug.css",
+			devPath + "resources/css/OpenEMap.css"
 		];
 		scripts = [
-	 		{src: "../bower_components/ext-4.2.1/ext-all-debug.js", dependencies: function() {return true;}},
-	    	{src: "../bower_components/ext-4.2.1/packages/ext-theme-neptune/build/ext-theme-neptune.js", dependencies: function() {return (typeof Ext !== "undefined" && Ext.isReady);}},
-	    	{src: "../bower_components/ext-4.2.1/locale/ext-lang-sv_SE.js", dependencies:  function() {return (typeof Ext !== "undefined" && Ext.isReady);}},
-		    {src: "../bower_components/proj4/dist/proj4-compressed.js", dependencies: function() {return true;}},
-	    	{src: "../bower_components/OpenLayers-2.13.1/OpenLayers.debug.js", dependencies: function() {return true;}},
-	    	{src: "../proj4_defs.js",dependencies: function() {return (typeof Proj4js !== "undefined");}},
-	    	{src: "../bower_components/es5-shim/es5-shim.min.js", dependencies: function() {return true;}},
-			{src: "../bower_components/geoext2/release/geoext-debug.js", dependencies: function() {return ((typeof Ext !== "undefined") && Ext.isReady &&  (typeof OpenLayers !== "undefined"));}}
+	 		{src: devPath + "bower_components/ext-4.2.1/ext-all-debug.js", dependencies: function() {return true;}},
+	    	{src: devPath + "bower_components/ext-4.2.1/packages/ext-theme-neptune/build/ext-theme-neptune.js", dependencies: function() {return (typeof Ext !== "undefined" && Ext.isReady);}},
+	    	{src: devPath + "bower_components/ext-4.2.1/locale/ext-lang-sv_SE.js", dependencies:  function() {return (typeof Ext !== "undefined" && Ext.isReady);}},
+		    {src: devPath + "bower_components/proj4/dist/proj4-compressed.js", dependencies: function() {return true;}},
+	    	{src: devPath + "bower_components/OpenLayers-2.13.1/OpenLayers.debug.js", dependencies: function() {return true;}},
+	    	{src: devPath + "proj4_defs.js",dependencies: function() {return (typeof Proj4js !== "undefined");}},
+	    	{src: devPath + "bower_components/es5-shim/es5-shim.min.js", dependencies: function() {return true;}},
+			{src: devPath + "bower_components/geoext2/release/geoext-debug.js", dependencies: function() {return ((typeof Ext !== "undefined") && Ext.isReady &&  (typeof OpenLayers !== "undefined"));}}
 	    ];
 	    scriptCallback = function() {
 			Ext.Loader.setConfig({
 				disableCaching: false,
 				paths: {
-			        GeoExt: '../bower_components/geoext2/src/GeoExt',
-					OpenEMap: '../src/main/javascript'
+			        GeoExt: devPath + 'bower_components/geoext2/src/GeoExt',
+					OpenEMap: devPath + 'src/main/javascript'
 				}
 			});
 
@@ -247,26 +248,31 @@ var initOpenEMap = function(configPath, options, callback) {
 		} else {
 			Ext.apply(OpenEMap, options.OpenEMap);
 
-			var creationCallback = function() {
-			    var labels = new OpenLayers.Rule({
-		          	filter: new OpenLayers.Filter.Comparison({
-		              	type: OpenLayers.Filter.Comparison.EQUAL_TO,
-		              	property: "type",
-		              	value: "label"
-		          	}),
-		            symbolizer: {
-		              	pointRadius: 20,
-		              	fillOpacity: 0,
-		              	strokeOpacity: 0,
-		              	label: "${label}"   
-		           	}
-	        	});
-				mapClient.drawLayer.styleMap.styles['default'].addRules([labels]);
-			};
-			
-			OpenEMap.mapClient = Ext.create('OpenEMap.Client', creationCallback);
+			OpenEMap.mapClient = Ext.create('OpenEMap.Client');
 
-//			OpenEMap.mapClient.destroy();
+			var waitUntilDrawLayerIsDefined = function() {
+				if (OpenEMap.mapClient.drawLayer === undefined) {
+					setTimeout(waitUntilDrawLayerIsDefined, 5);
+				} else {
+				    var labels = new OpenLayers.Rule({
+			          	filter: new OpenLayers.Filter.Comparison({
+			              	type: OpenLayers.Filter.Comparison.EQUAL_TO,
+			              	property: "type",
+			              	value: "label"
+			          	}),
+			            symbolizer: {
+			              	pointRadius: 20,
+			              	fillOpacity: 0,
+			              	strokeOpacity: 0,
+			              	label: "${label}"   
+			           	}
+		        	});
+					OpenEMap.mapClient.drawLayer.styleMap.styles['default'].addRules([labels]);
+				}
+			};
+			waitUntilDrawLayerIsDefined();
+			
+			OpenEMap.mapClient.destroy();
 	        OpenEMap.mapClient.params = Ext.Object.fromQueryString(document.location.search);
 
 			// If a permalink parameter is used in URL, use it
@@ -298,7 +304,6 @@ var initOpenEMap = function(configPath, options, callback) {
 						var config = JSON.parse(evt.responseText);
 						if (config) {
 							
-							OpenEMap.mapClient.destroy();
 							OpenEMap.mapClient.configure(Ext.clone(config), options);
 		
 							var labels = new OpenLayers.Rule({

@@ -2071,6 +2071,7 @@ Ext.define('OpenEMap.view.PopupResults', {
  * as constant text before and after the popupTextAttribute
  * @param {Object} [config] Configuration of the popup behaviour   
  * @param {Number} [config.tolerance=3] Tolerance to use when identifying in map. Radius in image pixels.
+ * @param {Boolean} [config.showOnlyFirstHit=true] true to show popup only for the first hit. false to show popups for each hit.
  */
 Ext.define('OpenEMap.action.Popup', {
     extend:  OpenEMap.action.Action ,
@@ -2086,6 +2087,11 @@ Ext.define('OpenEMap.action.Popup', {
 
         // Defaults to 3 pixels tolerance
         config.tolerance = config.tolerance || 3;  
+        // Deafults to only show first hit
+        if (config.showOnlyFirstHit === undefined || config.showOnlyFirstHit === null) {
+        	config.showOnlyFirstHit = true;
+        }
+        
         var Click = OpenLayers.Class(OpenLayers.Control, {
             initialize: function(options) {
                 OpenLayers.Control.prototype.initialize.apply(
@@ -2825,14 +2831,15 @@ Ext.define('OpenEMap.view.Map' ,{
                             strokeWidth: 3,
                             strokeOpacity: 1,
                             strokeColor: "#2969bf",
-                            fillOpacity: 0
+                            fillOpacity: 0.3,
+	                        fillColor: "#deecff"
                         }
                     },
                     "select": {
                         strokeWidth: 3,
                         strokeOpacity: 1,
                         fillColor: "#deecff",
-                        fillOpacity: 0.9,
+                        fillOpacity: 0.75,
                         strokeColor: "#2969bf"
                     },
                     "temporary": {
@@ -2847,9 +2854,23 @@ Ext.define('OpenEMap.view.Map' ,{
         
         this.drawLayer = new OpenLayers.Layer.Vector('Drawings', {
             displayInLayerSwitcher: false,
-            styleMap: this.parseStyle(config.drawStyle)
+            styleMap: this.parseStyle(config.drawStyle||this.drawLayerDefaultStyle)
         });
-        
+	    var labelRule = new OpenLayers.Rule({
+	      	filter: new OpenLayers.Filter.Comparison({
+	          	type: OpenLayers.Filter.Comparison.EQUAL_TO,
+	          	property: "type",
+	          	value: "label"
+	      	}),
+	        symbolizer: {
+	          	pointRadius: 20,
+	          	fillOpacity: 0,
+	          	strokeOpacity: 0,
+	          	label: "${label}"   
+	       	}
+	    });
+		this.drawLayer.styleMap.styles['default'].addRules([labelRule]);
+
         if (config.autoClearDrawLayer) {
             this.drawLayer.events.register('beforefeatureadded', this, function() {
                 this.drawLayer.destroyFeatures();
@@ -8353,7 +8374,7 @@ Ext.define('OpenEMap.Client', {
                                             
                                                            
                                                              
-    version: '1.6.1-rc.2',
+    version: '1.6.1',
     /**
      * OpenLayers Map instance
      * 
@@ -8777,6 +8798,8 @@ Ext.define('OpenEMap.Client', {
 					    	feature.layer.map.events.triggerEvent("popupfeatureunselected",{layer: popupLayer, featureid: feature.attributes[popupLayer.idAttribute]});
 				    	}
 		    		});
+		    		// Remove popups too
+		    		popupLayer.popup.forEach(function(item) {item.destroy();});
 				});
 				
 	    		// Shows the first feature matching the id

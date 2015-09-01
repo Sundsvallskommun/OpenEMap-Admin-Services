@@ -22,39 +22,7 @@
     ],
     "units": "m",
     "projection": "EPSG:3006",
-	"drawStyle" : {
-		"default": {
-            "Point": {
-        		"pointRadius": 4,
-                "graphicName": "square",
-                "fillColor": "#ff0000",
-                "fillOpacity": 0.25,
-                "strokeColor": "#ff0000",
-                "strokeWidth": 1
-        	},
-        	"Polygon": {
-	            "strokeWidth": 1,
-            	"strokeOpacity": 1,
-            	"fillColor": "#0000ff",
-            	"fillOpacity": 0.25,
-            	"strokeColor": "#0000ff"
-            }
-        },
-        "select": {
-            "strokeWidth": 2,
-            "strokeOpacity": 1,
-            "fillColor": "#ff00ff",
-            "fillOpacity": 0.25,
-            "strokeColor": "#ff0000"
-        },
-        "temporary": {
-            "strokeWidth": 2,
-            "strokeOpacity": 0.75,
-            "fillColor": "#ff00ff",
-            "fillOpacity": 0,
-            "strokeColor": "#ff00ff"
-        }
-	},
+	"drawStyle" : {},
     "layers": [
         {
             "name": "Image",
@@ -95,29 +63,6 @@
                 "visibility": true
             },
         	"layers": [
-		        {
-		            "name": "Byggnadslinje",
-		        	"isGroupLayer": false,
-		        	"queryable": true,
-		        	"clickable": true,
-		            "wms": {
-		                "url": "https://extmaptest.sundsvall.se/geoserver/gwc/service/wms",
-		                "params": {
-		                    "layers": "SundsvallsKommun:ByggnadLinje",
-		                    "format": "image/png",
-		                    "transparent": true
-		                },
-		                "options": {
-		                	"isBaseLayer": false,
-		                	"visibility": false
-		                }
-		            },
-		            "wfs": {
-		                "url": "https://extmaptest.sundsvall.se/geoserver/wfs",
-		                "featureType": "ByggnadLinje",
-		                "featurePrefix": "SundsvallsKommun"
-		            }
-		        },
 		        {
 		        	"name": "Expanded sub grouplayer", 
 		        	"isGroupLayer": true,
