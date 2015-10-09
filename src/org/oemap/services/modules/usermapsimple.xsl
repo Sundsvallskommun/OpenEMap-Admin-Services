@@ -1,18 +1,25 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 	version="1.0">
-	<xsl:output method="html" version="4.0" encoding="ISO-8859-1" />
+	<xsl:output method="html" version="4.0" encoding="UTF-8" />
 	<xsl:variable name="scripts">
 	/OpenEMap/OpenEMap.js
 	</xsl:variable>	
 
 	<xsl:template match="Document">
+		<div id="mapContent"></div>
 	    <style>
 		     input[type="button"], button {
 		     	padding: 0px !important;
 		     }
 	    </style>
 		<script type="text/javascript">
+			$('header').css('display', 'none');
+			$('#mapContent').height(window.innerHeight);
+			$('#mapContent').width(window.innerWidth);
+			$('#mapContent').css('position', 'absolute');
+			$('#mapContent').css('left', 0);
+			$('#mapContent').css('top', 0);
 		
 			var disableStyle = function(styleName, disabled) {
 			    var styles = document.styleSheets;
@@ -28,17 +35,12 @@
 				        }
 				    }
 			    }
+			    
 			};
 
 			// Hide OH-menus, to show map in fullscreen
-			var hideOH = function(){
-				$('header').css('display', 'none');
-				$('#mapContent').height(window.innerHeight);
-				$('#mapContent').width(window.innerWidth);
+			var hideOH = function(mapClient){
 				$('body').css('overflow', 'hidden');
-				//$('#mapContent').css('position', 'absolute');
-				//$('#mapContent').css('left', 0);
-				//$('#mapContent').css('top', 0);
 				
 				disableStyle('global.css', true);
 				disableStyle('header.css', true);
@@ -52,7 +54,7 @@
 			
 			var options = {
 				gui : {
-					map : {
+					map : { 
 						renderTo: 'mapContent'
 					},
 					toolbar : {},
@@ -109,10 +111,9 @@
 			    }
 		    };
 		    
-		    waitUntilOpenEMapIsDefined();
+		    setTimeout(waitUntilOpenEMapIsDefined, 1000);
     
 		</script>
-		<div id="mapContent" style="position: absolute; left: 0; right: 0; width: 100%; height: 100%;"></div>
 		<div id="showcoordinate" style="position: absolute; bottom: 0px; left: 10px;" ></div>
 		<div id="searchcoordinate" style="position: absolute; left: 150px; bottom: 0px;" ></div>
 	</xsl:template>

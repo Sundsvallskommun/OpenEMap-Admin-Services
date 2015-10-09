@@ -17,7 +17,7 @@ public class StringResponseHandler implements ResponseHandler<String> {
 	@Override
 	public void handleResponse(String content, HttpServletResponse res)
 			throws IOException {
-		HTTPUtils.sendReponse(content, "application/json", "ISO-8859-1", res);
+		HTTPUtils.sendReponse(content, "application/json", "UTF-8", res);
 	}
 
 }
