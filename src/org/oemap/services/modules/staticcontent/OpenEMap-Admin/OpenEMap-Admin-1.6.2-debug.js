@@ -55,6 +55,11 @@ Ext.define('AdmClient.view.MapConfiguration', {
 				itemId : 'mapPanel',
 				disabled : true,
 				tbar : [ {
+					xtype : 'textfield',
+					disabled : true,
+					itemId : 'configId',
+					width: 50
+				}, {
 					xtype : 'button',
 					text : 'Pan',
 					itemId : 'pan',
@@ -69,19 +74,16 @@ Ext.define('AdmClient.view.MapConfiguration', {
 					icon : 'resources/images/figur-R.png',
 					iconCls : 'extent',
 					enableToggle : true
-				},('->'),{
-					xtype : 'textfield',
-					disabled : true,
-					itemId : 'configId'
 				},{
 					xtype: 'checkbox',
 					fieldLabel : 'Autoclear draw layer',
 					itemId : 'autoClearDrawLayer'
-						},{
+				},{
 					xtype : 'textfield',
 					itemId : 'attribution',
 					enableKeyEvents : true,
-					fieldLabel : 'Attribution'
+					fieldLabel : 'Attribution',
+					width: '100%' 
 				} ],
 				margin : 12
 			}, {
@@ -391,10 +393,11 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 					
 			};
 			
-			var wfsUrl = proxyUrl + wfsServer + '?service=wfs&request=DescribeFeatureType&version=1.0.0&typeName=' + getTypeName(this.layer);
+			var wfsUrl = proxyUrl + (this.layer.wfs.url ? this.layer.wfs.url : wfsServer) + '?service=wfs&request=DescribeFeatureType&version=1.0.0&typeName=' + getTypeName(this.layer);
 			this.store = Ext.create('GeoExt.data.AttributeStore');
 			var proxy = this.store.getProxy();
 //			Ext.apply(proxy.proxyConfig, {headers: {"Content-Type": "application/xml; charset=UTF-8"}});
+
 			this.store.setUrl(wfsUrl);
 			this.store.load();
 		}
@@ -404,12 +407,13 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 			this.store = Ext.create('Ext.data.ArrayStore', {fields: [
 				{name: 'name'},
                 {name: 'alias'},
-                {name: 'visible', type: 'boolean', defaultValue: true}
+                {name: 'visible', type: 'boolean', defaultValue: true},
+                {name: 'mainAttribute', type:'boolean', defaultValue: false}
                 ]
             });
 
 			this.wmsStore = Ext.create('GeoExt.data.WmsCapabilitiesLayerStore',{
-				url: wmsGetCapabilities
+				url: proxyUrl + defaultWMSServer
 			});
 
 			
@@ -443,23 +447,33 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 									if (arguments[0].responseXML) {
 										var format = new OpenLayers.Format.GML();
 										var feature = format.read(arguments[0].responseXML);
-										var fields = this.getAttributeCollection(feature[0].attributes);
-										
-	
-										if (this.layer.metadata && this.layer.metadata.attributes && this.layer.metadata.attributes instanceof Object) {
-											var attributesInLayer = this.layer.metadata.attributes;
-											var fieldsFilter = function(f){
-												return f[0] === attribute;
-											};
-											for (var attribute in attributesInLayer){
-												var item = fields.filter(fieldsFilter, f);
-												if (item.length > 0) {
-													item[0][1] = item[0][1] === '' ? attributesInLayer[attribute].alias : item[0][1];
-													item[0][2] = true;
+										if (feature.length > 0) {
+											var fields = this.getAttributeCollection(feature[0].attributes);
+											
+		
+											if (this.layer.metadata && this.layer.metadata.attributes && this.layer.metadata.attributes instanceof Object) {
+												var attributesInLayer = this.layer.metadata.attributes;
+												var fieldsFilter = function(f){
+													return f[0] === attribute;
+												};
+												f = [];
+												for (var attribute in attributesInLayer){
+													var item = fields.filter(fieldsFilter, f);
+													if (item.length > 0) {
+														item[0][1] = item[0][1] === '' ? attributesInLayer[attribute].alias : item[0][1]; // Set alias
+														item[0][2] = true; // make it visible
+														item[0][3] = attributesInLayer[attribute].mainAttribute ? attributesInLayer[attribute].mainAttribute : false; // set mainAttribute
+													}
 												}
 											}
+											this.store.loadData(fields);
+										} else {
+											this.close();
+											Ext.Error.raise({
+												title: 'Kommunikationsproblem',
+												msg: 'Kan inte hämta information om lagret'
+											});
 										}
-										this.store.loadData(fields);
 									} else {
 										this.close();
 										Ext.Error.raise({
@@ -469,26 +483,33 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 									}
 								};
 
+								var requestUrl;
                             	for (var srsName in boundaryBox){
                             		var boundary = boundaryBox[srsName].bbox;
                             		var extent = new OpenLayers.Bounds.fromArray(boundary);
-
-                            		var requestUrl = proxyUrl + wmsServer + '?' + 'request=GetFeatureInfo&service=WMS&version=1.1.1&layers=' + layerName + '&styles=&srs=' + srsName + '&bbox=' + extent.toString() + 
+									var url = (this.layer.wms.url ? this.layer.wms.url : defaultWMS);
+									url = url.split('?')[0]; // returns anything before the first '?'
+                            		
+                            		requestUrl = proxyUrl + url + '?' + 'request=GetFeatureInfo&service=WMS&version=1.1.1&layers=' + layerName + '&styles=&srs=' + srsName + '&bbox=' + extent.toString() + 
                             		 	'&width=1&height=1&query_layers=' + layerName + '&info_format=application/vnd.ogc.gml&feature_count=1&x=0&y=0';
+                            		break;
+                            	}
                             		Ext.Ajax.request({
                             		 	scope: this,
                             		 	url: requestUrl,
                             		 	success: success
                             		});
-                            	}
+//                            	}
 	                        }, this);
 	                    } else {
+							this.close();
 	                    	Ext.Error.raise({
 	                            msg: 'Cant get metadata for layer' + layerName,
 	                            option: this
 	                        });	            
 	                    }
                     } else {
+						this.close();
                     	Ext.Error.raise({
                             msg: 'Cant get metadata for layer' + layerName,
                             option: this
@@ -504,6 +525,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 						if (self.layer.metadata && self.layer.metadata.attributes && self.layer.metadata.attributes[l.data.name] instanceof Object){
 							l.data.alias = self.layer.metadata.attributes[l.data.name].alias;
 							l.data.visible = true;
+							l.data.mainAttribute = self.layer.metadata.attributes[l.data.name].mainAttribute !== undefined ? self.layer.metadata.attributes[l.data.name].mainAttribute : false;
 						}
 					});
 					store.update();
@@ -546,8 +568,25 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerDetails', {
 							self.store.data.items[rowIdx].data.alias = self.store.data.items[rowIdx].data.alias || self.store.data.items[rowIdx].data.name;
 						}else{
 							self.store.data.items[rowIdx].data.alias = '';
+							self.store.data.items[rowIdx].data.mainAttribute = false;
 						}
 						self.store.update();
+					}
+				}
+			},{
+				header: 'Huvudattribut',
+				xtype: 'checkcolumn',
+				dataIndex: 'mainAttribute',
+				listeners :{
+					'checkchange': function(chkBox, rowIdx, checked, eOpts){
+						if (checked){
+							self.store.data.items[rowIdx].data.mainAttribute = true;
+							self.store.data.items[rowIdx].data.alias = self.store.data.items[rowIdx].data.alias || self.store.data.items[rowIdx].data.name;
+						} else {
+							self.store.data.items[rowIdx].data.mainAttribute = false;
+						}
+						self.store.update();
+						self.update();
 					}
 				}
 			}]
@@ -689,7 +728,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerPanel', {
 						height : 30,
 		            	width: 500,
 						enableKeyEvents : true,
-						value: typeof wmsGetCapabilities !== 'undefined' ? wmsGetCapabilities : ''
+						value: typeof defaultWMSServer !== 'undefined' ? defaultWMSServer : (wmsGetCapabilities !== undefined ? wmsGetCapabilities : '')
 					},
 					{
 			            xtype : 'treepanel',
@@ -1072,7 +1111,7 @@ Ext.define('AdmClient.controller.MapConfiguration', {
 	renderConfiguration : function(){
 		var self = this;
 		Ext.Ajax.request({
-			url : appPath + '/configs',
+			url : appPath + '/adminconfigs/configlist',
 			method : 'GET',
 			success : function(evt){
 				var configs = JSON.parse(evt.responseText);
@@ -1122,7 +1161,7 @@ Ext.define('AdmClient.controller.MapConfiguration', {
 
 	loadConfiguration: function(id) {
 		Ext.Ajax.request({
-			url : appPath + '/configs/config/' + id,
+			url : appPath + '/adminconfigs/config/' + id,
 			method : 'GET',
 			success : function(evt){
 				var config = JSON.parse(evt.responseText);
@@ -2857,15 +2896,6 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
              
             var queryable = this.tryToGetRecordAttribute(node, 'queryable');
             var clickable = this.tryToGetRecordAttribute(node, 'clickable');
-            if ((queryable && clickable) || (clickable && this._updating)){
-            	var layerPieces = stripName(layer.wms.params.layers ? layer.wms.params.layers : layer.wms.params.LAYERS);
-                layer.wfs = {};
-                layer.wfs.featurePrefix = layerPieces[0];
-                layer.wfs.featureType = layerPieces[1];
-                layer.wfs.url = wfsServer;
-            } else {
-                if (layer.wfs) delete layer.wfs;
-            }
         }
          
         if (node.hasChildNodes()) {
@@ -3019,7 +3049,7 @@ Ext.define('AdmClient.controller.ConfigLayers', {
                 keyup : this.onWMSServiceKeyup,
                 render: function(field) {
                     // Intial select
-                    this.loadWMSCapabilities(field.getValue());
+                    this.loadWMSCapabilities(proxyUrl + field.getValue());
                 }
             },
             '#newGroupLayer' :{
@@ -3471,7 +3501,7 @@ Ext.define('AdmClient.controller.toolDetails.DrawRectangle', {
 		selector : '#toolsGrid'
 	}],
 	toolId: 'DrawRectangle',
-	config : {id: 'DrawRectangle', type : 'DrawObject', itemId : 'DrawObjectR', tooltip : 'Rita rektangel', iconCls : 'action-draw-R', disable : false, obectConfig : {type : 'R'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
+	config : {id: 'DrawRectangle', type : 'DrawObject', itemId : 'DrawObjectR', tooltip : 'Rita rektangel', iconCls : 'action-draw-square', disable : false, obectConfig : {type : 'R'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3522,7 +3552,7 @@ Ext.define('AdmClient.controller.toolDetails.DrawOctagon', {
 		selector : '#toolsGrid'
 	}],
 	toolId: 'DrawOctagon',
-	config: {id: 'DrawOctagon', type : 'DrawObject', itemId : 'DrawObjectO', tooltip : 'Rita åttkantigt objekt', iconCls : 'action-draw-O', disable : false, obectConfig : {type : 'O'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
+	config: {id: 'DrawOctagon', type : 'DrawObject', itemId : 'DrawObjectO', tooltip : 'Rita åttkantigt objekt', iconCls : 'action-draw-octagon', disable : false, obectConfig : {type : 'O'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3573,7 +3603,7 @@ Ext.define('AdmClient.controller.toolDetails.DrawL-shape', {
 		selector : '#toolsGrid'
 	}],
 	toolId: 'DrawL-shape',
-	config : {id: 'DrawL-shape', type : 'DrawObject', itemId : 'DrawObjectL', tooltip : 'Rita L-format objekt', iconCls : 'action-draw-L', disable : false, obectConfig : {type : 'L'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
+	config : {id: 'DrawL-shape', type : 'DrawObject', itemId : 'DrawObjectL', tooltip : 'Rita L-format objekt', iconCls : 'action-draw-l', disable : false, obectConfig : {type : 'L'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -3624,7 +3654,7 @@ Ext.define('AdmClient.controller.toolDetails.DrawD-shape', {
 		selector : '#toolsGrid'
 	}],
 	toolId: 'DrawD-shape',
-	config : {id: 'DrawD-shape', type : 'DrawObject', itemId : 'DrawObjectD', tooltip : 'Rita objekt med avfasade hörn', iconCls : 'action-draw-D', disable : false, obectConfig : {type : 'D'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
+	config : {id: 'DrawD-shape', type : 'DrawObject', itemId : 'DrawObjectD', tooltip : 'Rita objekt med avfasade hörn', iconCls : 'action-draw-d', disable : false, obectConfig : {type : 'D'}, attributes: {state: 'GEOMETRY', metadata: {state: {hidden: false}}}},
 	init : function() {
 		this.control({
 			'#toolsGrid checkcolumn' : {
@@ -4410,12 +4440,12 @@ Ext.define('AdmClient.controller.LayerDetails', {
 		var layer = this.getLayerDetails().layer;
 		layer.metadata = {};
 		store.data.items.forEach(function(c){
-			if (c.data.visible || c.data.alias){
+			if (c.data.visible || c.data.alias || c.data.mainAttribute){
 				if (c.data.alias === "") return;
 				if (!layer.metadata.attributes){
 					layer.metadata.attributes = {};
 				}
-				layer.metadata.attributes[c.data.name] = {alias : c.data.alias};
+				layer.metadata.attributes[c.data.name] = {alias : c.data.alias, mainAttribute: c.data.mainAttribute !== 'undefined' ? c.data.mainAttribute : false };
 			}
 		});
 

@@ -13288,15 +13288,15 @@ Ext.define('GeoExt.window.Popup', {
         // X
         if(popupPos[0] < padding.left) {
             newPos[0] = padding.left;
-        } else if(popupPos[0] + popupSize.width > panelSize[0] - padding.right) {
-            newPos[0] = panelSize[0] - padding.right - popupSize.width;
+        } else if(popupPos[0] + popupSize.width + this.getBorderPadding().beforeY + this.getBorderPadding().afterY> panelSize[0] - padding.right) {
+            newPos[0] = panelSize[0] - padding.right - popupSize.width - this.getBorderPadding().beforeY - this.getBorderPadding().afterY;
         }
 
         // Y
         if(popupPos[1] < padding.top) {
             newPos[1] = padding.top;
-        } else if(popupPos[1] + popupSize.height > panelSize[1] - padding.bottom) {
-            newPos[1] = panelSize[1] - padding.bottom - popupSize.height;
+        } else if(popupPos[1] + popupSize.height + this.getBorderPadding().beforeX + this.getBorderPadding().afterX > panelSize[1] - padding.bottom) {
+            newPos[1] = panelSize[1] - padding.bottom - popupSize.height - this.getBorderPadding().beforeX - this.getBorderPadding().afterX;
         }
 
         var dx = popupPos[0] - newPos[0];

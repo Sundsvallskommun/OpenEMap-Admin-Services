@@ -165,7 +165,7 @@ Ext.define('OpenEMap.action.DeleteMeasure', {
             }
         });
 
-        config.iconCls = config.iconCls || 'action-deletegeometry';
+        config.iconCls = config.iconCls || 'action-deletemeasure';
         config.tooltip = config.tooltip || 'Ta bort m&auml;tning(ar).';
         
         this.callParent(arguments);
@@ -509,29 +509,32 @@ Ext.define('OpenEMap.action.DrawGeometry', {
         config.control = new Control(layer, OpenLayers.Handler[config.geometry]);
 
         layer.events.register('beforefeatureadded', this, function(evt){
-            if (this.isText(evt.feature)){
-                Ext.Msg.prompt('Text', 'Mata in text:', function(btn, text){
-                    if (btn == 'ok'){
-                        evt.feature.attributes.label = text;
-                        evt.feature.data.label = text;
-                        layer.redraw();
-                    }
-                });
+            if (this.isText(evt.feature)) {
+            	if (evt.feature.state || evt.feature.state === 'insert') {
+	                Ext.Msg.prompt('Text', 'Mata in text:', function(btn, text){
+	                    if (btn == 'ok'){
+	                        evt.feature.attributes.label = text;
+	                        evt.feature.data.label = text;
+	                        layer.redraw();
+	                    }
+	                });
+	            } 
             }
         });
         
                 
-        config.iconCls = config.iconCls || 'action-drawgeometry';
-       
-       if (!config.tooltip){
+       	if (!config.tooltip){
        		config.tooltip = config.geometry === 'Polygon' ? 'Rita område' :
          		config.geometry === 'Path' ? 'Rita linje' :
          		config.geometry === 'Point' ? 'Rita punkt' : 'Rita geometri';
-         		
+         	config.iconCls = config.geometry === 'Polygon' ? 'action-drawpolygon' :
+         		config.geometry === 'Path' ? 'action-drawline' :
+         		config.geometry === 'Point' ? 'action-drawpoint' : 'action-drawgeometry';
          	if (this.isText(config)){
          		config.tooltip = 'Placera ut text.';	
+         		config.iconCls = 'action-drawtext';
          	}
-       }
+       	}
         config.toggleGroup = 'extraTools';
         
         this.callParent(arguments);
@@ -1870,6 +1873,108 @@ Ext.define('OpenEMap.action.ModifyText', {
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+/**
+ * Action in toolbar that zooms the user to full extent
+ * 
+ * The snippet below is from configuration to MapClient.view.Map
+ * 
+ * 
+ *        "tools": ["Permalink"]
+ */
+Ext.define('OpenEMap.action.Permalink', {
+    extend:  OpenEMap.action.Action ,
+    constructor: function(config) {
+        this.client = config.client;
+    
+        config.control = config.control = new OpenLayers.Control.Button({
+            trigger: this.onClick.bind(this)
+        });
+        
+        config.iconCls = config.iconCls || 'action-permalink';
+        config.tooltip = config.tooltip || 'Skapa länk till kartan';
+        
+        this.callParent(arguments);
+    },
+    onClick: function() {
+        this.generate();
+    },
+    generate: function() {
+        var success = function(response) {
+            var id = Ext.decode(response.responseText);
+            
+            this.createWindow(id);
+        };
+        
+        Ext.Ajax.request({
+            url: OpenEMap.wsUrls.permalinks,
+            method: 'POST',
+            jsonData: this.client.getPermalinkdata(),
+            success: success.bind(this)
+        });
+    },
+    createWindow: function(id) {
+	 	var url = document.location.protocol + '//'+ document.location.host + document.location.pathname + '?permalink=' + id;
+        var label = '<a href="' + url + '" target="_blank">' + url + '</a>';
+    
+        if (this.w) {
+            if (this.w.isHidden()) this.w.show();
+            this.w.items.getAt(0).getComponent('permalink').update(label);
+            return;
+        }
+        
+        this.w = Ext.create('Ext.Window', {
+            title: 'Permalink',
+            layout: 'fit',
+            xtype: 'form',
+            width: 400,
+            bodyPadding: 5,
+            bodyStyle: {
+                border: '0px'
+            },
+            plain: true,
+            border: false,
+            closeAction: 'hide',
+            items: {
+                layout: 'anchor',
+                border: false,
+                items: {
+                    xtype: 'label',
+                    name: 'permalink',
+                    itemId: 'permalink',
+                    readOnly: true,
+                    border: false,
+                    anchor: '100%',
+                    html: label
+                }
+            },
+            bbar: [ '->',
+                {
+                    text: 'Uppdatera',
+                    handler: this.onClick.bind(this)
+                }
+            ]
+        });
+        this.w.show();
+    }
+    
+});
+
+/*    
+    Copyright (C) 2014 Härnösands kommun
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as
+    published by the Free Software Foundation, either version 3 of the
+    License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 /** 
  * @class OpenEMap.view.PopupResults
  * @author Anders Erlandsson, Sundsvalls kommun 
@@ -1966,6 +2071,7 @@ Ext.define('OpenEMap.view.PopupResults', {
  * as constant text before and after the popupTextAttribute
  * @param {Object} [config] Configuration of the popup behaviour   
  * @param {Number} [config.tolerance=3] Tolerance to use when identifying in map. Radius in image pixels.
+ * @param {Boolean} [config.showOnlyFirstHit=true] true to show popup only for the first hit. false to show popups for each hit.
  */
 Ext.define('OpenEMap.action.Popup', {
     extend:  OpenEMap.action.Action ,
@@ -1981,6 +2087,11 @@ Ext.define('OpenEMap.action.Popup', {
 
         // Defaults to 3 pixels tolerance
         config.tolerance = config.tolerance || 3;  
+        // Deafults to only show first hit
+        if (config.showOnlyFirstHit === undefined || config.showOnlyFirstHit === null) {
+        	config.showOnlyFirstHit = true;
+        }
+        
         var Click = OpenLayers.Class(OpenLayers.Control, {
             initialize: function(options) {
                 OpenLayers.Control.prototype.initialize.apply(
@@ -2030,28 +2141,36 @@ Ext.define('OpenEMap.action.Popup', {
 						popupLayer.popup.forEach(function(p) {p.destroy();p = null;});
 						popupLayer.popup = [];
 			    	}
+                	popupLayer.features.forEach(function(feature) {
+                		feature.renderIntent = 'default';
+			    		feature.layer.drawFeature(feature);
+				    	// Fire action "popupfeatureunselected" on the feature including layer and featureid
+				    	map.events.triggerEvent("popupfeatureunselected",{layer: popupLayer, featureid: feature.attributes[popupLayer.idAttribute]});
+            		});
                 	var popupFeature = function(feature) {
                 		if (feature.geometry.intersects(bounds.toGeometry())) {
-					    	// get text to populate popup 
-                			var popupText = popupLayer.popupTextPrefix+feature.attributes[popupLayer.popupTextAttribute]+popupLayer.popupTextSuffix;
-					    	var popupTitle = '';
-					    	if (popupLayer.popupTitleAttribute) {
-					    		popupTitle = feature.attributes[popupLayer.popupTitleAttribute];
-					    	}
-					    	
-					    	if (feature.geometry.getVertices().length == 1) {
-					    		clkFeature = feature.clone();
-					    	}
-					    	// Create popup 
-					    	var popup = new OpenEMap.view.PopupResults({mapPanel : mapPanel, location: clkFeature, popupText: popupText, feature: feature, title: popupTitle});
-					
-							// Show popup
-					        popup.show();
-							
-							// TODO - move popup window from layer to feature
-							// Adds popup to array of popups in map  
-					        popupLayer.popup.push(popup);
-					        
+                			// only shows popup if popupTextAttribute is defined
+                			if ((typeof popupLayer.popupTextAttribute !== 'undefined') && (popupLayer.popupTextAttribute !== null)) {
+						    	// get text to populate popup 
+	                			var popupText = popupLayer.popupTextPrefix+feature.attributes[popupLayer.popupTextAttribute]+popupLayer.popupTextSuffix;
+						    	var popupTitle = '';
+						    	if (popupLayer.popupTitleAttribute) {
+						    		popupTitle = feature.attributes[popupLayer.popupTitleAttribute];
+						    	}
+						    	
+						    	if (feature.geometry.getVertices().length == 1) {
+						    		clkFeature = feature.clone();
+						    	}
+						    	// Create popup 
+						    	var popup = new OpenEMap.view.PopupResults({mapPanel : mapPanel, location: clkFeature, popupText: popupText, feature: feature, title: popupTitle});
+						
+								// Show popup
+						        popup.show();
+								
+								// TODO - move popup window from layer to feature
+								// Adds popup to array of popups in map  
+						        popupLayer.popup.push(popup);
+							}					        
 				    		// Highlight feature
 				    		feature.renderIntent = 'select';
 				    		feature.layer.drawFeature(feature);
@@ -2060,13 +2179,6 @@ Ext.define('OpenEMap.action.Popup', {
 					    	map.events.triggerEvent("popupfeatureselected",{layer: popupLayer, featureid: feature.attributes[popupLayer.idAttribute]});
 		                	return true;
 				    	} else {
-				    		// Remove highlight feature if selected
-			    			if (feature.renderIntent == 'select') {
-					    		feature.renderIntent = 'default';
-					    		feature.layer.drawFeature(feature);
-						    	// Fire action "popupfeatureunselected" on the feature including layer and featureid
-						    	map.events.triggerEvent("popupfeatureunselected",{layer: popupLayer, featureid: feature.attributes[popupLayer.idAttribute]});
-					    	}
 				    		return false;
 				    	}
                 	};
@@ -2596,6 +2708,7 @@ Ext.define('OpenEMap.view.Map' ,{
         this.map.setLayerIndex(this.measureLayerSegments, 98);
         
         this.selectControl = new OpenLayers.Control.SelectFeature(this.drawLayer);
+        this.selectControl.handlers.feature.stopDown = false;
         this.map.addControl(this.selectControl);
 
         // Define container for popup windows - initialize when first popupLayer is created. 
@@ -2719,14 +2832,15 @@ Ext.define('OpenEMap.view.Map' ,{
                             strokeWidth: 3,
                             strokeOpacity: 1,
                             strokeColor: "#2969bf",
-                            fillOpacity: 0
+                            fillOpacity: 0.3,
+	                        fillColor: "#deecff"
                         }
                     },
                     "select": {
                         strokeWidth: 3,
                         strokeOpacity: 1,
                         fillColor: "#deecff",
-                        fillOpacity: 0.9,
+                        fillOpacity: 0.75,
                         strokeColor: "#2969bf"
                     },
                     "temporary": {
@@ -2741,9 +2855,23 @@ Ext.define('OpenEMap.view.Map' ,{
         
         this.drawLayer = new OpenLayers.Layer.Vector('Drawings', {
             displayInLayerSwitcher: false,
-            styleMap: this.parseStyle(config.drawStyle)
+            styleMap: this.parseStyle(config.drawStyle||this.drawLayerDefaultStyle)
         });
-        
+	    var labelRule = new OpenLayers.Rule({
+	      	filter: new OpenLayers.Filter.Comparison({
+	          	type: OpenLayers.Filter.Comparison.EQUAL_TO,
+	          	property: "type",
+	          	value: "label"
+	      	}),
+	        symbolizer: {
+	          	pointRadius: 20,
+	          	fillOpacity: 0,
+	          	strokeOpacity: 0,
+	          	label: "${label}"   
+	       	}
+	    });
+		this.drawLayer.styleMap.styles['default'].addRules([labelRule]);
+
         if (config.autoClearDrawLayer) {
             this.drawLayer.events.register('beforefeatureadded', this, function() {
                 this.drawLayer.destroyFeatures();
@@ -3376,10 +3504,17 @@ Ext.define('OpenEMap.view.SearchFastighet', {
             } ]
         });
         
+        // Creating selectControl to make it stopDown, which will make mousedown event available to other handlers too
+        // thus making map panable even when grabbing inside a feature 
+        var selectControl = new OpenLayers.Control.SelectFeature(this.mapPanel.searchLayer);
+        selectControl.handlers.feature.stopDown = false;
+        this.mapPanel.map.addControl(selectControl);
+        var selectionModel = Ext.create('GeoExt.selection.FeatureModel', {selectControl: selectControl});
+        
         var grid = Ext.create('Ext.grid.Panel', {
             columns : columns,
             store : store,
-            selType : 'featuremodel'
+            selModel : selectionModel
         });
         
         function defSearchCombo(type) {
@@ -3747,6 +3882,10 @@ Ext.define('OpenEMap.data.GroupedLayerTree' ,{
                 metadata: typeof node.get('metadata') === 'string' ? {} : node.get('metadata'),
                 layers: []
             };
+            
+            if (!layerCfg.wms || Object.keys(layerCfg.wms).length === 0) layerCfg.wms = undefined;
+            if (!layerCfg.wfs || Object.keys(layerCfg.wfs).length === 0) layerCfg.wfs = undefined;
+//            if (!layerCfg.layers || layerCfg.layers.length === 0) layerCfg.layers = undefined;
 
 	        for(var j=0; j<node.childNodes.length;j++) {
 		        layerCfg.layers.push(configAddLayer(node.childNodes[j], includeLayerRef));
@@ -3805,12 +3944,13 @@ Ext.define('OpenEMap.data.GroupedLayerTree' ,{
         }
         var layer = node.raw.layer;
         var url;
-        if (node.raw.legendURL !== undefined) {
+        if (layer.legendURL !== undefined) {
             url = layer.legendURL;
         } else if (node.raw.wms && node.raw.wms.params && (node.raw.wms.params.LAYERS || node.raw.wms.params.layers)) {
             var layerRecord = GeoExt.data.LayerModel.createFromLayer(layer);
             var legend = Ext.create('GeoExt.container.WmsLegend', {
-                layerRecord: layerRecord
+                layerRecord: layerRecord,
+                useScaleParameter: false
             });
             url = legend.getLegendUrl(node.raw.wms.params.LAYERS || node.raw.wms.params.layers);
         }
@@ -4044,12 +4184,13 @@ Ext.define('OpenEMap.view.layer.Tree' ,{
             var getLegendUrl = function(node) {
                 var layer = node.raw.layer;
                 var url;
-                if (node.raw.legendURL !== undefined) {
+                if (layer.legendURL !== undefined) {
                     url = layer.legendURL;
                 } else if (node.raw.wms && (node.raw.wms.params.LAYERS || node.raw.wms.params.layers)) {
                     var layerRecord = GeoExt.data.LayerModel.createFromLayer(layer);
                     var legend = Ext.create('GeoExt.container.WmsLegend', {
-                        layerRecord: layerRecord
+                        layerRecord: layerRecord,
+                        useScaleParameter: false
                     });
                     url = legend.getLegendUrl(node.raw.wms.params.LAYERS || node.raw.wms.params.layers);
                 }
@@ -4070,7 +4211,30 @@ Ext.define('OpenEMap.view.layer.Tree' ,{
         
         this.callParent(arguments);
     },
-    
+    getBaseLayersConfiguration: function() {
+        var layerConfigs = [];
+
+        function configAddLayer(layer) {
+	        var layerCfg = {
+	            name: layer.name,
+	            wms: {
+	            	url: layer.url, 
+	            	options: layer.options, 
+	            	params: layer.params
+	        	},
+            	visibility: layer.visibility
+	        };
+			layerCfg.wms.options.visibility = layer.visibility; 
+			return layerCfg;
+        }
+
+        var baseLayers = this.mapPanel.map.layers.filter(function(layer) { return layer.isBaseLayer; });
+        for (var i=0; i<baseLayers.length;i++) {
+	        layerConfigs.unshift(configAddLayer(baseLayers[i]));
+        }
+	    return layerConfigs;
+    },
+
     getConfig: function(includeLayerRef) {
     	// Start with initial config to get a complete config object
         var config = Ext.clone(this.client.initialConfig);
@@ -4080,8 +4244,11 @@ Ext.define('OpenEMap.view.layer.Tree' ,{
 
         // layer tree does not include base layers so extract them from initial config
     	var baseLayers = config.layers.filter(function(layer) {
-    		return (layer.wms && layer.wms.options.isBaseLayer) ? layer : false;
+    		return (layer.wms && layer.wms.options && layer.wms.options.isBaseLayer) ? layer : false;
     	});
+    	
+    	baseLayers = this.getBaseLayersConfiguration();
+    	
     	config.layers = baseLayers.concat(layers);
     	
     	return config;
@@ -4440,10 +4607,6 @@ Ext.define('OpenEMap.view.layer.Add' ,{
       
 
     title: 'Lägg till lager',
-
-    width: 250,
-    height: 550,
-
     headerPosition: 'top',
     collapsible: true,
     collapseMode: 'header',
@@ -4494,8 +4657,8 @@ Ext.define('OpenEMap.view.layer.Add' ,{
                 xtype: 'treecolumn',
                 flex: 1,
                 dataIndex: 'text'
-            },
-            me.metadataColumn
+            }
+//            , me.metadataColumn
         ];
 
         this.store = Ext.create('OpenEMap.data.GroupedLayerTree');
@@ -4564,6 +4727,7 @@ Ext.define('OpenEMap.view.layer.Add' ,{
         });
         
         root.appendChild(children);
+    	this.gui.fireEvent('addLayerControlLoaded', this);
     }
 
 });
@@ -4944,11 +5108,8 @@ Ext.define('OpenEMap.data.SavedMapConfigs' ,{
                
                                   
       
-
     model: 'OpenEMap.model.MapConfig',
-
     storeId: 'savedMapConfigs',
-
     autoLoad: true,
     
     constructor: function(config) {
@@ -4956,7 +5117,7 @@ Ext.define('OpenEMap.data.SavedMapConfigs' ,{
             type: 'rest',
             appendId: true,
 	        url: ((OpenEMap && OpenEMap.wsUrls && OpenEMap.wsUrls.basePath) ? OpenEMap.wsUrls.basePath : '') + 
-	        		((OpenEMap && OpenEMap.wsUrls && OpenEMap.wsUrls.adminconfigs) ? OpenEMap.wsUrls.adminconfigs : ''),
+	        		((OpenEMap && OpenEMap.wsUrls && OpenEMap.wsUrls.adminconfigs) ? OpenEMap.wsUrls.adminconfigs : '') + '/configlist',
             reader: {
                 type: 'json',
                 root: 'configs'
@@ -4965,6 +5126,7 @@ Ext.define('OpenEMap.data.SavedMapConfigs' ,{
                 type: 'json'
             }
         };
+
         this.callParent(arguments);
     }
 });
@@ -5010,10 +5172,22 @@ Ext.define('OpenEMap.view.SavedMapConfigs' ,{
                 },
 			    listeners: {
 		            click: function(grid, rowIndex, cellIndex, column, e, record, tr) {
-	                    this.client.destroy();
-				        this.client.configure(record.raw, this.client.initialOptions);
-	                    e.stopEvent();
-	                    return false;
+						var requestUrl = ((OpenEMap && OpenEMap.wsUrls && OpenEMap.wsUrls.basePath) ? OpenEMap.wsUrls.basePath : '') + 
+							((OpenEMap && OpenEMap.wsUrls && OpenEMap.wsUrls.configs) ? OpenEMap.wsUrls.configs : '') + 
+							'/config/' + record.get('configId');
+						Ext.Ajax.request({
+							scope: this,
+							url: requestUrl,
+							success: function(response) {
+								this.client.destroy();
+								this.client.configure(JSON.parse(response.responseText), this.client.initialOptions);
+								e.stopEvent();
+								return false;
+							},
+							failure: function(response) {
+								Ext.MessageBox.alert('Kommunikationsproblem', 'Kartan kan inte öppnas. Kontakta systemadministratör.');
+							}
+						});
 	               }.bind(this)
 			    }
             },
@@ -5080,18 +5254,19 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
 		                                   
 		                                                           
 	  
-
+//	resizable: true,
+//	resizeHandles: "s",
 	layout: {
-		type: 'hbox',
-	    pack: 'end',
-	    align: 'stretch'
+		type: 'vbox',
+		align: 'stretch'
 	},
-	width: 500,
-	height: 650,
-	resizable: true,
-	resizeHandles: "s",
-	
+	listeners: {
+		afterrender: function() {
+	    	this.gui.fireEvent('layerControlLoaded', this);
+		}
+	},
  	initComponent: function(config) {
+    	this.setLoading(true);
  		var me = this;
 
  		this.dataHandler = Ext.create('OpenEMap.data.DataHandler');
@@ -5102,7 +5277,12 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
 
  		this.savedMapConfigs = Ext.create('OpenEMap.view.SavedMapConfigs', {
  			dataHandler: this.dataHandler,
- 			client: this.client
+ 			autoScroll: true,
+ 			client: this.client,
+	        title: 'Kartor',
+	        collapsible: true,
+	        flex: 1,
+	        minHeight: 100
  		});
  		
  		var renameAction = Ext.create('Ext.Action', {
@@ -5111,12 +5291,21 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
             disabled: true,
             handler: function(widget, event) {
                 var node = this.showOnMapLayerView.getSelectionModel().getSelection()[0];
-                if (node) {
+                if (node && node.get('isGroupLayer')) {
                     Ext.Msg.prompt('Byt namn...', 'Ange nytt namn:', function(btn, text) {
                         if (btn == 'ok'){
                             node.set('text', text);
                         }
-                    });
+                    }, window, false, node.get('text'));
+
+                    // TODO - Add functionality for changing name of a ordinary layer 
+/*                } else if (node && node.get('name')) {
+                    Ext.Msg.prompt('Byt namn...', 'Ange nytt namn:', function(btn, text) {
+                        if (btn == 'ok'){
+                            node.set('name', text);
+                        }
+                    }, window, false, node.get('name'));
+*/                	
                 }
             }.bind(this)
         });
@@ -5151,13 +5340,14 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
 
 		this.showOnMapLayerView = Ext.create('OpenEMap.view.layer.Tree', {
 			title: 'Visas på kartan',
-			width: '50%',
-			height: '80%',
-			region: 'north',
     		split: true,
+    		border: false,
     		mapPanel: this.mapPanel,
     		client: this.client,
     		rootVisible: false,
+	        collapsible: true,
+	        autoscroll: true,
+	        flex: 4,
     		
     		viewConfig: {
 		        plugins: {
@@ -5180,11 +5370,11 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
 	                flex: 1,
 	                dataIndex: 'text'
 	            }, 
-	            Ext.create('OpenEMap.action.MetadataInfoColumn', {
+/*	            Ext.create('OpenEMap.action.MetadataInfoColumn', {
 		 			metadataWindow: this.metadataWindow,
 		 			dataHandler: this.dataHandler
 		 		}),
-	            {
+*/	            {
 	                xtype: 'actioncolumn',
 	                width: 40,
 	                iconCls: 'action-remove',
@@ -5247,6 +5437,7 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
     	
     	this.showOnMapLayerView.getSelectionModel().on({
             selectionchange: function(sm, selections) {
+//                renameAction.enable();
                 if (selections.length === 1 && selections[0].data.isGroupLayer) {
                     renameAction.enable();
                     createGroupAction.enable();
@@ -5258,40 +5449,20 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
         });
 
 	  	this.items = [
-			Ext.create('OpenEMap.view.layer.Add', {
-			    mapPanel: this.mapPanel,
-			    dataHandler: this.dataHandler,
-			    metadataColumn: Ext.create('OpenEMap.action.MetadataInfoColumn',{
-		 			metadataWindow: this.metadataWindow,
-		 			dataHandler: this.dataHandler
-		 		})
-			}),
-/*
-			Ext.create('Ext.Component',{
-				html: 'foo'
-			}),
-*/
+			me.showOnMapLayerView,
+			me.savedMapConfigs
+/*			
 	    	{
-	    		xtype: 'panel',
-	    		layout: 'border',
-	    		width: '50%',
-	    		border: false,
-	    		colapsible: true,
-	    		items: [
-	    			me.showOnMapLayerView,
-			    	{
-						title: 'Sparade kartor',
-						region: 'center',
-						xtype: 'panel',
-						border: false,
-						layout: 'fit',
-						collapsible: false,
-						titleCollapse: true,
-						items: me.savedMapConfigs
-					}
-	    		]
-	    	}
-		];
+				title: 'Sparade kartor',
+				region: 'center',
+				xtype: 'panel',
+				border: false,
+				collapsible: false,
+				titleCollapse: true,
+				items: me.savedMapConfigs
+			}
+*/		];
+
     	this.callParent(arguments);
     },
     getConfig: function(includeLayerRef) {
@@ -5320,11 +5491,16 @@ Ext.define('OpenEMap.view.layer.Basic' ,{
 
     rootVisible: false,
     width: 300,
-	border: false,
 	resizable: true,
 	resizeHandles: 's',
+	listeners: {
+		afterrender: function() {
+	    	this.gui.fireEvent('layerControlLoaded', this);
+		}
+	},
 
     initComponent: function() {
+    	this.setLoading(true);
         if (!this.renderTo) {
             this.title = 'Lager';
             this.bodyPadding = 5;
@@ -5371,6 +5547,7 @@ Ext.define('OpenEMap.Gui', {
                                                     
                                                 
                                             
+                                           
                                        
                                        
                                                 
@@ -5390,6 +5567,11 @@ Ext.define('OpenEMap.Gui', {
                                             
                                                 
     objectConfigWindowTitle: 'Object configuration',
+    layerControlLoading: true,
+    addLayerControlLoading: true,
+    mixins: {
+        observable:  Ext.util.Observable 
+    },
     constructor : function(config) {
         this.config = config.config;
         this.gui = config.gui;
@@ -5399,19 +5581,32 @@ Ext.define('OpenEMap.Gui', {
         this.search = config.config.search;
         this.client = config.client;
 
+        this.mixins.observable.constructor.call(this, config);
+        this.addEvents(
+            'layerControlLoaded',
+            'addLayerControlLoaded'
+        );
+
         // GUI defaults
         if (this.gui === undefined) {
             this.gui = {};
         }
         if (this.gui.map === undefined) {this.gui.map = false;}
-        if (this.gui.rightPanel === undefined) {this.gui.rightPanel = {};}
+        if (this.gui.map === {}) {this.gui.map = false;}
+        if (this.gui.layerControl === undefined) {this.gui.layerControl = {};}
+        if (this.gui.addLayerControl === undefined) {this.gui.addLayerControl = {};}
+//        if (this.gui.rightPanel === undefined) {this.gui.rightPanel = {};}
         
         this.mapPanel = Ext.create('OpenEMap.view.Map', {
             map: this.map,
             extent: this.config.extent,
             config: this.config,
             listeners: {
+                'beforerender': function() {
+			    	this.mapPanel.setLoading(true);
+                },
                 'afterrender': function() {
+			    	this.mapPanel.setLoading(false);
                     if (this.config.attribution) {
                         var el = this.mapPanel.getEl();
                         Ext.DomHelper.append(el, '<span class="unselectable attribution">'+this.config.attribution+'</span>');
@@ -5427,7 +5622,7 @@ Ext.define('OpenEMap.Gui', {
         this.createScalebarPanel();
         this.createShowCoordinatePanel();
         this.createSearchCoordinatePanel();
-        this.createRightPanel();
+        this.createLayerControl();
         this.createBaseLayersPanel();
         
         var items = [];
@@ -5437,7 +5632,9 @@ Ext.define('OpenEMap.Gui', {
         if (this.scalebar && !this.gui.scalebar.renderTo) items.push(this.scalebar);
         if (this.showCoordinate && !this.gui.showCoordinate.renderTo) items.push(this.showCoordinate);
         if (this.searchCoordinate && !this.gui.searchCoordinate.renderTo) items.push(this.searchCoordinate);
-        if (this.rightPanel && !this.gui.rightPanel.renderTo) items.push(this.rightPanel);
+        if (this.layerControl && !this.gui.layerControl.renderTo) items.push(this.layerControl);
+        if (this.addLayerControl && !this.gui.addLayerControl.renderTo) items.push(this.addLayerControl);
+//        if (this.rightPanel && !this.gui.rightPanel.renderTo) items.push(this.rightPanel);
         if (this.baseLayers && !this.gui.baseLayers.renderTo) items.push(this.baseLayers);
         if (this.toolbar && !this.gui.toolbar.renderTo) items.push(this.toolbar);
         
@@ -5462,6 +5659,12 @@ Ext.define('OpenEMap.Gui', {
                 height: element ? element.getHeight() : undefined,
                 items : items
             }, this.gui.map));
+//            window.addEventListener('resize', function() {
+//            	element.setWidth(window.innerWidth);
+//            	element.setHeight(window.innerHeight);
+//            	this.mapClient.mapPanel.setSize(window.innerWidth, window.innerHeight);
+//            	element.setSize(window.innerWidth, window.innerHeight);
+//           });
         } else {
             this.container = Ext.create('Ext.container.Viewport', {
                 layout : 'absolute',
@@ -5477,7 +5680,9 @@ Ext.define('OpenEMap.Gui', {
         if (this.searchCoordinate) this.searchCoordinate.destroy();
         if (this.showCoordinate) this.showCoordinate.destroy();
         if (this.toolbar) this.toolbar.destroy();
-        if (this.rightPanel) this.rightPanel.destroy();
+        if (this.layerControl) this.layerControl.destroy();
+        if (this.addLayerControl) this.addLayerControl.destroy();
+//        if (this.rightPanel) this.rightPanel.destroy();
         if (this.baseLayers) this.baseLayers.destroy();
         if (this.objectConfig) this.objectConfig.destroy();
         if (this.objectConfigWindow) this.objectConfigWindow.destroy();
@@ -5534,6 +5739,8 @@ Ext.define('OpenEMap.Gui', {
                 } else if (type == 'Identify') {
                     config.basePath = basePath;
                     config.layers = layers;
+                    config.client = this.client;
+                } else if (type == 'Permalink') {
                     config.client = this.client;
                 } else if (type == 'Popup') {
                     config.layers = layers;
@@ -5601,69 +5808,146 @@ Ext.define('OpenEMap.Gui', {
      * - SearchParcel panel
      * @private
      */
-    createRightPanel: function() {
+    createLayerControl: function() {
         
-        var rightPanelItems = [];
-        var width = 300;
-        // default position for rightPanel
-        if (!this.gui.rightPanel.y) {this.gui.rightPanel.y = 20;}
-        if (!this.gui.rightPanel.style) {this.gui.rightPanel.style = 'right: 20px';}
+        // default position for layerControl and addLayerControl
+        if (!this.gui.layerControl.y) {this.gui.layerControl.y = 20;}
+        if (!this.gui.layerControl.right) {this.gui.layerControl.right = 20;}
+        if (!this.gui.layerControl.style) {this.gui.layerControl.style = 'right: ' + this.gui.layerControl.right + 'px';}
+        if (!this.gui.layerControl.width) {this.gui.layerControl.width = 300;}
+        if (!this.gui.layerControl.maxHeight) {this.gui.layerControl.maxHeight = window.innerHeight-this.gui.layerControl.y-60;}
+
+        if (!this.gui.addLayerControl.y) {this.gui.addLayerControl.y = this.gui.layerControl.y;}
+        if (!this.gui.addLayerControl.right) {this.gui.addLayerControl.right = this.gui.layerControl.width + this.gui.layerControl.right;}
+        if (!this.gui.addLayerControl.style) {this.gui.addLayerControl.style = 'right: ' + this.gui.addLayerControl.right + 'px';}
+        if (!this.gui.addLayerControl.width) {this.gui.addLayerControl.width = 300;}
+        if (!this.gui.addLayerControl.maxHeight) {this.gui.addLayerControl.maxHeight = window.innerHeight-this.gui.addLayerControl.y-56;}
         
+        // create right panel containing layers and search panels if no renderTo target is configured
+        this.layerControl = Ext.create('Ext.panel.Panel', {
+        	renderTo: this.gui.layerControl.renderTo,
+            y : this.gui.layerControl.y,
+            style : this.gui.layerControl.style,
+            layout : {
+                type: 'vbox',
+                align : 'stretch'
+            },
+            width : this.gui.layerControl.width,
+            maxHeight: this.gui.layerControl.maxHeight,
+            border: false,
+            bodyStyle: {
+                background: 'transparent'
+            }
+        });
+
+
+	    
         if (this.gui.layers) {
 	        // Checks whether the advanced or basic Layer control should be used
 	        if (this.gui.layers && this.gui.layers.type === 'advanced') {
-	        	width = 500;
+	    		this.on({
+	    			layerControlLoaded: function () {
+					    this.layerControlLoading = false;
+					    if (this.addLayerControlLoading === false) {
+					    	this.mapLayers.setLoading(false);
+					    	this.addLayerControl.setLoading(false);
+					    } else {
+					    	this.mapLayers.setLoading(true);
+					    	this.addLayerControl.setLoading(true);
+					    }
+	    			},
+	    			addLayerControlLoaded: function () {
+					    this.addLayerControlLoading = false;
+					    if (this.layerControlLoading === false) {
+					    	this.mapLayers.setLoading(false);
+					    	this.addLayerControl.setLoading(false);
+					    } else {
+					    	this.mapLayers.setLoading(true);
+					    	this.addLayerControl.setLoading(true);
+					    }
+			    	}
+			    });
+
 	            this.mapLayers = Ext.create('OpenEMap.view.layer.Advanced', Ext.apply({
 	                mapPanel : this.mapPanel,
 	                orginalConfig: this.orginalConfig,
-	                client: this.client
+	                client: this.client,
+	                flex: 1,
+		            gui: this
+	            }, this.gui.layers));
+	            
+	            // Adds the Add layer control
+				this.addLayerControl = Ext.create('OpenEMap.view.layer.Add', {
+				    mapPanel: this.mapPanel,
+				    border: false,
+		        	renderTo: this.gui.addLayerControl.renderTo,
+		        	y: this.gui.addLayerControl.y,
+		            style : this.gui.addLayerControl.style,
+				    width: this.gui.addLayerControl.width,
+				    maxHeight: this.gui.addLayerControl.maxHeight,
+				    collapsible: true,
+				    dataHandler: this.dataHandler,
+				    metadataColumn: Ext.create('OpenEMap.action.MetadataInfoColumn',{
+			 			metadataWindow: this.metadataWindow,
+			 			dataHandler: this.dataHandler
+			 		}),
+		            gui: this
+				});
+
+	        } else if (this.gui.layers && this.gui.layers.type === 'listconfigs') { 
+	    		this.on({
+	    			layerControlLoaded: function () {
+					    this.layerControlLoading = false;
+				    	this.mapLayers.setLoading(false);
+	    			}
+			    });
+	            this.mapLayers = Ext.create('OpenEMap.view.layer.Advanced', Ext.apply({
+	                mapPanel : this.mapPanel,
+	                orginalConfig: this.orginalConfig,
+	                client: this.client,
+	                flex: 1,
+	                gui: this
 	            }, this.gui.layers));
 	        } else {
+	    		this.on({
+	    			layerControlLoaded: function () {
+					    this.layerControlLoading = false;
+				    	this.mapLayers.setLoading(false);
+	    			}
+			    });
 	            this.mapLayers = Ext.create('OpenEMap.view.layer.Basic', Ext.apply({
 	                mapPanel : this.mapPanel,
-	                client: this.client
+	                client: this.client,
+	                flex: 1,
+	                gui: this
 	            }, this.gui.layers));
 	        }
 	        
 	        // If the layers panel not should be rendered to div, add it to the right panels items
 	        if (!this.gui.layers.renderTo) {
-	        	rightPanelItems.push(this.mapLayers);
+				this.layerControl.add(this.mapLayers);
 	        }
 	    }
-        
-        
+
         if (this.gui.searchFastighet && this.search)  {
 	        // Create SearchParcel control
 	        this.searchFastighet = Ext.create('OpenEMap.view.SearchFastighet', Ext.apply({
 	            mapPanel : this.mapPanel,
 	            basePath: this.config.basePath,
 	            search: this.search,
-	            width: 300 
+		        collapsible: true,
+	            height: 120,
+	            width: this.gui.layerControl.width
 	        }, this.gui.searchFastighet));
             if (!this.gui.searchFastighet.renderTo) {
-            	rightPanelItems.push(this.searchFastighet);
+				this.layerControl.add(this.searchFastighet);
             }
         }
-
-        // Create right panel including both layrer control and searchParcel
-        // create right panel containing layers and search panels if no renderTo target is configured
-        if (rightPanelItems.length > 0) {
-            this.rightPanel = Ext.create('Ext.panel.Panel', {
-            	renderTo: this.gui.rightPanel.renderTo,
-                y : this.gui.rightPanel.y,
-                layout : {
-                    type: 'vbox',
-                    align : 'stretch'
-                },
-                width : width,
-                border: false,
-                style : this.gui.rightPanel.style,
-                bodyStyle: {
-                    background: 'transparent'
-                },
-                items : rightPanelItems
-	        });
-	    }
+        
+        if (this.layerControl.items.getCount() <= 0) {
+        	this.layerControl.destroy();
+        }
+        
 	},
         
 	/** 
@@ -5768,14 +6052,13 @@ Ext.define('OpenEMap.Gui', {
                 cls : this.cls,
 			    setCoord: function(e) {
 			    	var lonlat = this.getLonLatFromPixel(e.xy);
-			    	var eC = parent.mapClient.gui.showCoordinate.getComponent('e');
-			    	var nC = parent.mapClient.gui.showCoordinate.getComponent('n');
+			    	var eC = OpenEMap.mapClient.gui.showCoordinate.getComponent('e');
+			    	var nC = OpenEMap.mapClient.gui.showCoordinate.getComponent('n');
 			    	eC.setValue(Math.round(lonlat.lon));
 			    	nC.setValue(Math.round(lonlat.lat));
 			    }
         	};
             this.showCoordinate = Ext.create('OpenEMap.view.ShowCoordinate', Ext.apply(cfg, this.gui.showCoordinate));
-
 		    this.map.events.register("mousemove", this.map, this.showCoordinate.setCoord);
         }
 	},
@@ -5947,6 +6230,9 @@ Ext.define('OpenEMap.config.Parser', {
         // filter out plain layer definitions (no group)
         var layers = this.extractLayers(layerTree);
         
+        // Sort baselayers to put the layer with visibility=true first, because OpenLayers uses the first baselayer as the active one.
+        layers = this.sortBaseLayers(layers);
+
         options.allOverlays = !layers.some(this.isBaseLayer, this);
         
         // Create OpenLayers.Layer.WMS from layer definitions that describe WMS source
@@ -5967,6 +6253,20 @@ Ext.define('OpenEMap.config.Parser', {
         return map;
     },
 
+    sortBaseLayers: function(layers) {
+    	var baseLayers = layers.filter(function(layer) {return (layer.layer && layer.layer.isBaseLayer);});
+    	var overlays = layers.filter(function(layer) {return !(layer.layer && layer.layer.isBaseLayer);});
+    	var sorted = false;
+    	var sortedBaseLayers = [];
+    	for (var ix=0; baseLayers.length > ix; ix++) {
+    		if (baseLayers[ix].visibility) {
+    			sortedBaseLayers.unshift(baseLayers[ix]);
+    		} else {
+    			sortedBaseLayers.push(baseLayers[ix]);
+    		}
+    	}
+    	return sortedBaseLayers.concat(overlays);
+    },
     /**
     * Iterate over the layertree and create a ExtJS-tree structure
     * @private
@@ -6090,7 +6390,7 @@ Ext.define('OpenEMap.config.Parser', {
     extractPopupLayers: function(layers) {
         layers = this.extractLayers(layers);
         layers = layers.filter(function(layer) {
-        	if (layer.idAttribute && layer.popupTextAttribute) {
+        	if (layer.popup) {
         		return true;
         	} else {
         		return false;
@@ -8118,7 +8418,7 @@ Ext.define('OpenEMap.Client', {
                                             
                                                            
                                                              
-    version: '1.6.0-rc.3',
+    version: '1.6.2-rc.2',
     /**
      * OpenLayers Map instance
      * 
@@ -8176,7 +8476,7 @@ Ext.define('OpenEMap.Client', {
      * 
      * @property {OpenLayers.Layer.Vector}
      */
-    drawLayer: null,
+    drawLayer: undefined,
     /**
      * Configure map
      * 
@@ -8184,6 +8484,7 @@ Ext.define('OpenEMap.Client', {
      * 
      * @param {Object} config Map configuration object
      * @param {Object} options Additional MapClient options
+     * @param {Function options.callback Callback that is called when the client is configured and ready 
      * @param {Object} options.gui Options to control GUI elements. Each property in this object is
      * essentially a config object used to initialize an Ext JS component. If a property is undefined or false
      * that component will not be initialized except for the map component. If a property is a defined
@@ -8224,6 +8525,25 @@ Ext.define('OpenEMap.Client', {
         if (this.gui.controlToActivate) {
             this.gui.controlToActivate.activate();
         }
+        
+        if (options.callback) {
+            options.callback.call(this);
+        }
+    },
+    getPermalinkdata: function() {
+        var features = this.drawLayer.features;
+        var format = new OpenLayers.Format.GeoJSON();
+        var geojson = format.write(features);
+    
+        return {
+            version: this.version,
+            config: this.getConfig(),
+            options: this.initialOptions,
+            extent: this.map.getExtent().toArray(),
+            drawLayer: {
+                geojson: geojson
+            }
+        };
     },
     /**
      * @param {boolean} includeLayerRef include reference to OpenLayers layer if available
@@ -8303,8 +8623,9 @@ Ext.define('OpenEMap.Client', {
                     var style = Ext.applyIf(Ext.clone(styleOverride), {
                         label: lineString.getLength().toFixed(accuracy).toString() + " m",
                         strokeColor: "#000000",
-                        strokeWidth: 3,
-                        labelAlign: 'cm'
+                        strokeWidth: 0,
+                        labelAlign: 'cm',
+                        pointRadius: 0
                     });
                     var feature = new OpenLayers.Feature.Vector(centroid, null, style);
                     return feature;
@@ -8326,7 +8647,7 @@ Ext.define('OpenEMap.Client', {
             }
         };
         
-        if (this.labelLayer === null) {
+        if (this.labelLayer === undefined) {
             this.labelLayer = new OpenLayers.Layer.Vector();
             this.map.addLayer(this.labelLayer);
             
@@ -8348,7 +8669,7 @@ Ext.define('OpenEMap.Client', {
      * @param {string} geojson GeoJSON with features that should be added to map 
      * @param {string} layername Layer name 
      * @param {string} [idAttribute='id'] Name of the attribute stored in each feture that holds the a unique id. Defaults to 'id'. Must be unique.
-     * @param {string} [popupTextAttribute='popupText'] Name of the attribute stored in each feture that holds the information to be shown in a popup defaults to 'popupText'
+     * @param {string} [popupTextAttribute] Name of the attribute stored in each feture that holds the information to be shown in a popup. Set to null or undefined to not show popup
      * @param {string} [popupTextPrefix=''] Prefix to be shown in popup before the value in popupTextAttribute 
      * @param {string} [popupTextSuffix=''] Suffix to be shown in popup before the value in popupTextAttribute
      * @param {string} [popupTitleAttribute=null] Title for the popup
@@ -8369,10 +8690,6 @@ Ext.define('OpenEMap.Client', {
         	idAttribute = 'id';
         }
         
-        if (!popupTextAttribute) {
-        	popupTextAttribute = 'popupText';
-        }
-
 		if (!popupTextPrefix) {
 			popupTextPrefix ='';
 		}
@@ -8459,7 +8776,7 @@ Ext.define('OpenEMap.Client', {
 			layer.popup = [];
     	}
     	// Remove the layer
-		mapClient.map.removeLayer(layer);
+		layer.map.removeLayer(layer);
     },
     /**
      * Show popup for a feature
@@ -8521,10 +8838,14 @@ Ext.define('OpenEMap.Client', {
 					    	feature.layer.map.events.triggerEvent("popupfeatureunselected",{layer: popupLayer, featureid: feature.attributes[popupLayer.idAttribute]});
 				    	}
 		    		});
+		    		// Remove popups too
+		    		popupLayer.popup.forEach(function(item) {item.destroy();});
 				});
 				
-	    		// Shows the first feature matching the id
-	    		this.showPopupFeaturePopup(popupLayer, features[0]);
+      			if ((typeof popupLayer.popupTextAttribute !== 'undefined') && (popupLayer.popupTextAttribute !== null)) {
+		    		// Shows the first feature matching the id
+		    		this.showPopupFeaturePopup(popupLayer, features[0]);
+		    	}
 
 	    		// Highlight feature
 	    		features[0].renderIntent = 'select';
@@ -8549,13 +8870,30 @@ Ext.define('OpenEMap.Client', {
     destroyPopupLayers: function() {
         var parser = Ext.create('OpenEMap.config.Parser');
     	var popupLayers = parser.extractPopupLayers(this.map.layers);
+    	var mapClient = this;
 		if (popupLayers) {
 			// Remove popup layers
 			popupLayers.forEach(function(layer) {
-				this.removePopupLayer(layer);
+				mapClient.removePopupLayer(layer);
 			});
 		}
     },
+    /**
+     * Helper method to zoom to all features in all popup layers 
+     */
+    zoomToAllPopupLayers: function() {
+        var parser = Ext.create('OpenEMap.config.Parser');
+    	var popupLayers = parser.extractPopupLayers(this.map.layers);
+    	if (popupLayers.length > 0) {
+			var featureBounds = new OpenLayers.Bounds();
+	 		popupLayers.forEach(function(popupLayer) {
+				featureBounds.extend(popupLayer.getDataExtent());
+			});
+			// Zoom to bounds. And scale the bounds to make sure all features and thyeir presentation is inside it
+			popupLayers[0].map.zoomToExtent(featureBounds.scale(1.1, featureBounds.getCenterPixel()));
+		}    	
+    },
+    
     /**
      * Clean up rendered elements
      */
@@ -8630,9 +8968,18 @@ Ext.apply(OpenEMap, {
 
     /**
      * @property {Object} [wsUrls] WS paths to be used for AJAX requests
+     * @property {string} [wsUrls.basePath] basepath to Open eMap Admin services 
+     * @property {string} [wsUrls.configs] relative path to publig configs within Open eMap Admin services
+     * @property {string} [wsUrls.adminconfigs] path to admin config service within Open eMap Admin services 
+     * @property {string} [wsUrls.permalinks] path to Open eMap Permalink service 
+     * @property {string} [wsUrls.metadata]  path to Open eMap Geo Metadata service
+     * @property {string} [wsUrls.metadataAbstract] path to Open eMap Geo Metadata Abstract service
+     * @property {string} [wsUrls.servers] unused
+     * @property {string} [wsUrls.layers] unused 
      */
     wsUrls: {
         basePath:   	'/openemapadmin',
+        permalinks:     '/openemappermalink/permalinks',
         configs:    	'/configs',
         adminconfigs: 	'/adminconfigs',
         servers:    	'settings/servers',

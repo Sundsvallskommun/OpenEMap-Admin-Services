@@ -1,73 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<meta http-equiv="Content-type" content="text/html; charset=UTF-8">
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<title>Open eMap - Popup layer example</title>
-		<meta name="description" content="">
-		<meta name="author" content="Anders Erlandsson, Sundsvalls kommun" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>Open eMap - Popup layer example</title>
 
-	    <link rel="stylesheet" type="text/css" href="/libs/ext-theme-oep/ext-theme-oep-all.css">
-	    <link rel="stylesheet" type="text/css" href="../resources/css/OpenEMap.css">
-	
-	    <script type="text/javascript" src="https://kartatest.e-tjansteportalen.se/libs/OpenLayers-2.13.1/lib/OpenLayers.js"></script>  
-	    <script type="text/javascript" src="https://kartatest.e-tjansteportalen.se/libs/ext-4.2.1/ext-all.js"></script>
-	    <script type="text/javascript" src="https://kartatest.e-tjansteportalen.se/libs/ext-4.2.1/ext-theme-neptune.js"></script>
-	    <script type="text/javascript" src="https://kartatest.e-tjansteportalen.se/libs/ext-4.2.1/locale/ext-lang-sv_SE.js"></script>
-	    <script type="text/javascript" src="https://kartatest.e-tjansteportalen.se/libs/proj4js/proj4-compressed.js"></script>
-	    <script type="text/javascript" src="../proj4_defs.js"></script>
-	    <script type="text/javascript" src="https://kartatest.e-tjansteportalen.se/libs/geoext-2.0.2-rc.1-all.js"></script> 
-	    <script type="text/javascript" src="../OpenEMap-1.6.0-rc.3-min.js"></script>
+    <script type="text/javascript">
+    var debug=null;
+    var devPath = '../';
+    </script> 
+    <script type="text/javascript" src="../OpenEMap.js"></script>
+    
+    <script type="text/javascript" src="popupLayerGeojson.js"></script>
 
-	    <script type="text/javascript" src="popupLayerGeojson.js"></script>
-	    <script type="text/javascript" src="popupLayerStyles.js"></script>
-	
-	    <script type="text/javascript">
-	    var popupLayer = null;
-	    
-		Ext.onReady(function() {
-		    mapClient = Ext.create('OpenEMap.Client');
-			function init(name) {
-				Ext.Ajax.request({
-					url : name,
-					success : function(response) {
-						var config = Ext.decode(response.responseText);
-	
-						var gui = {
-							map : {
-								renderTo : 'map'
-							},
-							zoomTools : {}
-						};
-	
-						mapClient.destroy();
-						mapClient.configure(config, {
-							gui : gui
-						});
-						
-						// Create objects in map based on GeoJSON, see brandlarmGeojson.js with style specified in brandlarmStyles.js
-						popupLayer = mapClient.addPopupLayer(geojson, 'Popup layer example', 'id', 'popupText', 'Prefix', '<a href="javascript:alert(\'Suffix link!\');">Suffix</a>', 'popupTitle', stylemapGraphics, 'EPSG:3006');
+    <script type="text/javascript">
+	    function callback(mapClient) {
+			var head = document.getElementsByTagName("head")[0];
+			var script = {};
+			script = document.createElement('script');
+			script.type = 'text/javascript';
+		 	script.src = 'popupLayerStyles.js';
+			head.appendChild(script);
 
-						// Listen to event for feature selected
-		               	mapClient.map.events.register('popupfeatureselected', this, function(arg) {
-		               		console.log('Feature in layer ' + arg.layer.name + ' with id ' + arg.featureid + ' was selected.');
-	               		});
-						// Listen to event for feature unselected
-		               	mapClient.map.events.register('popupfeatureunselected', this, function(arg) {
-		               		console.log('Feature in layer ' + arg.layer.name + ' with id ' + arg.featureid + ' was unselected.');
-	               		});
-	               		// Showing brandlarm with id=1
-						mapClient.showPopupFeature(popupLayer, 1);
-					}
+			function createPopupLayer() {
+	            // Create objects in map based on GeoJSON, see brandlarmGeojson.js with style specified in brandlarmStyles.js
+				popupLayer = mapClient.addPopupLayer(geojson, 'Popup layer example', 'id', 'popupText', '', '', 'popupTitle', stylemapGraphics, 'EPSG:3006', true);
+	            // Create objects in map based on GeoJSON, see brandlarmGeojson.js with style specified in brandlarmStyles.js
+//				popupLayer2 = mapClient.addPopupLayer(geojson2, 'Popup layer example 2', 'id', null, '', '', 'popupTitle', stylemapGraphics, 'EPSG:3006', true);
+	
+	            // Listen to event for feature selected
+				mapClient.map.events.register('popupfeatureselected', this, function(arg) {
+	            	console.log('Feature in layer ' + arg.layer.name + ' with id ' + arg.featureid + ' was selected.');
 				});
+	            // Listen to event for feature unselected
+	            mapClient.map.events.register('popupfeatureunselected', this, function(arg) {
+	                console.log('Feature in layer ' + arg.layer.name + ' with id ' + arg.featureid + ' was unselected.');
+	            });
+				
+				mapClient.zoomToAllPopupLayers();
+				
+				document.getElementById("showfeature1").onclick=function(){mapClient.showPopupFeature(popupLayer, 1, false);};
+				
+	            // Showing object with id=1
+//	            mapClient.showPopupFeature(popupLayer, 5, true);
+//	            mapClient.showPopupFeature(popupLayer, 1, true);
+//	            mapClient.showPopupFeature(popupLayer2, 9, true);
+			}
+
+			function waitUntilStyleIsLoaded(callback) {
+				if (typeof stylemapGraphics !== "undefined") {
+					callback();
+				} else {
+					setTimeout(function() { waitUntilStyleIsLoaded(callback); }, 5);
+				}
 			}
 			
-			init('popupLayerConfig.json');
-		});
-	    </script>
+			waitUntilStyleIsLoaded(createPopupLayer);
+	    }
+
+		function init(name) {
+			var options = {
+				gui : {
+					map : {
+						renderTo: 'map'
+					},
+					zoomTools : {}
+				},
+				OpenEMap : {
+					basePathImages : '../resources/images/',
+					// Base path to be used for mapfish print servlet requests
+					basePathMapFish : '/mapfishprint-2.1.1/pdf',
+					// Base path to be used for all AJAX requests against search-lm REST API
+					basePathLM : '/search/lm/',
+					// name of user to be used when calling search-lm REST API
+					lmUser : 'sundsvall',
+					// Base path to be used for all AJAX requests against Elasticsearch REST API
+					basePathES : '/search/es/',
+					// URL/paths related to WMS usage / advanced layer list
+					wmsURLs : {
+						// URL to be used to fetch WMS capabilities etc. for add layer
+						basePath : '/geoserver/wms',
+						// URL to be used when WMS layer has been added to config
+						url : 'https://extmaptest.sundsvall.se/geoserver/wms',
+						// URL to getcapabilities document. Must include request parameter (eg. https://extmap.sundsvall.se/geoserver/wms?request=GetCapabilities&version=1.1.1)
+						getCapabilities : 'https://extmaptest.sundsvall.se/getcapabilities/wms.xml'
+					},
+					//Base path to proxy to be used for WFS-post
+					basePathProxy : '/cgi-bin/proxy.py?url=',
+					// WS paths to be used for AJAX requests
+					wsUrls : {
+						//basepath to Open eMap Admin
+						basePath : '/openemapadmin-1.6.0',
+						// relative path to configs, set in admin of modules in OpenHierarchy
+						configs : '/configs',
+						// relative path to adminconfigs, set in admin of modules in OpenHierarchy
+						adminconfigs : '/adminconfigs',
+						// path to permalinks
+						permalinks : '/openemappermalink/permalinks',
+						metadata : 'geometadata/getmetadatabyid',
+						metadata_abstract : 'geometadata/getabstractbyid'
+					},
+				}
+			};
+			
+			try {
+				initOpenEMap(name, options, callback);
+			} catch(msg) {
+				alert(msg);
+			}
+		}
+		
+		init('popupLayerConfig.json');
+    </script>
 	</head>
 	<body>
-    <div id="map" style="position: absolute; width: 100%; height: 650px" class="popup"></div>
+    <div id="map" style="position: absolute; width: 100%; height: 100%" class="popup"></div>
+    <div id="showfeature1" style="position: absolute; left: 10px; bottom: 50px;"><input type="button" value="Feature 1"></button></div>
 	</body>
 </html>
