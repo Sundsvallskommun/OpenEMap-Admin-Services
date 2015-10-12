@@ -60,7 +60,8 @@
 					toolbar : {},
 					zoomTools : {},
 					layers : {
-						type: 'listconfigs'
+						type: 'listconfigs',
+						legendDelay: 0
 					},
 					baseLayers : {},
 					searchFastighet : {},

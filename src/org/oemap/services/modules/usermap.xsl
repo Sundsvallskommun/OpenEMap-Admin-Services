@@ -65,7 +65,8 @@
 					toolbar : {},
 					zoomTools : {},
 					layers : {
-						type: 'advanced'
+						type: 'advanced',
+						legendDelay: 0
 					},
 					baseLayers : {},
 					searchFastighet : {},
