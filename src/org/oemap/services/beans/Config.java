@@ -105,6 +105,10 @@ public class Config extends ConfigBase {
 	@DAOManaged
 	private Boolean isPublic;
 	
+	@XMLElement
+	@DAOManaged
+	private String searchStyle;
+	
 	public Boolean getIsPublic() {
 		return isPublic;
 	}
@@ -241,5 +245,14 @@ public class Config extends ConfigBase {
 	public void setOptions(String options) {
 		this.options = options;
 	}
+
+	public String getSearchStyle() {
+		return searchStyle;
+	}
+
+	public void setSearchStyle(String searchStyle) {
+		this.searchStyle = searchStyle;
+	}
+
 
 }
