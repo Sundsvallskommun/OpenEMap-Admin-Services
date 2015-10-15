@@ -4297,13 +4297,8 @@ Ext.define('OpenEMap.view.layer.Tree' ,{
                                          
                             
       
-    rootVisible: true,
+    rootVisible: false,
     hideHeaders: true,
-	listeners: {
-		afterrender: function() {
-	    	this.gui.fireEvent('layerControlLoaded', this);
-		}
-	},
     initComponent: function() {
         if(!this.store && this.mapPanel) {
             this.store = Ext.create('OpenEMap.data.GroupedLayerTree', {
@@ -5547,6 +5542,7 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
 	        collapsible: true,
 	        autoscroll: true,
 	        flex: 4,
+	        legendDelay: this.legendDelay,
     		
     		viewConfig: {
 		        plugins: {
@@ -5693,6 +5689,11 @@ Ext.define('OpenEMap.view.layer.Basic' ,{
 	resizable: true,
 	resizeHandles: 's',
 
+	listeners: {
+		afterrender: function() {
+	    	this.gui.fireEvent('layerControlLoaded', this);
+		}
+	},
     initComponent: function() {
     	this.setLoading(true);
         if (!this.renderTo) {
