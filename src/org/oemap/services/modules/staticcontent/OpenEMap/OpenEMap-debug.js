@@ -2923,29 +2923,31 @@ Ext.define('OpenEMap.view.Map' ,{
         this.drawLayer.events.register('beforefeaturemodified', this, onBeforefeaturemodified);
         this.drawLayer.events.register('afterfeaturemodified', this, onAfterfeaturemodified);
         
-        var searchStyle = {
-                "Point": {
-                    externalGraphic: OpenEMap.basePathImages + "point_added.png", 
-                    graphicWidth: 15, 
-                    graphicOpacity: 1
-                },
-                "Line": {
-                    strokeWidth: 3,
-                    strokeColor: "#2969bf",
-                    strokeOpacity: 1
-                },
-                "Polygon": {
-                    strokeDashstyle: 'dot',
-                    strokeWidth: 3,
-                    strokeOpacity: 1,
-                    strokeColor: "#f58d1e",
-                    fillOpacity: 0
-                }
-        };
+        if (!config.searchStyle) {
+	        config.searchStyle = {
+	                "Point": {
+	                    externalGraphic: OpenEMap.basePathImages + "point_added.png", 
+	                    graphicWidth: 15, 
+	                    graphicOpacity: 1
+	                },
+	                "Line": {
+	                    strokeWidth: 3,
+	                    strokeColor: "#2969bf",
+	                    strokeOpacity: 1
+	                },
+	                "Polygon": {
+	                    strokeDashstyle: 'dot',
+	                    strokeWidth: 3,
+	                    strokeOpacity: 1,
+	                    strokeColor: "#f58d1e",
+	                    fillOpacity: 0
+	                }
+	        };
+        }
         
         this.searchLayer = new OpenLayers.Layer.Vector('Searchresult', {
             displayInLayerSwitcher: false,
-            styleMap: this.parseStyle(searchStyle)
+            styleMap: this.parseStyle(config.searchStyle)
         });
         
         var defaultStyles = OpenLayers.Control.DynamicMeasure.styles;
@@ -3085,7 +3087,34 @@ Ext.define('OpenEMap.form.SearchRegisterenhet', {
     alias: 'widget.searchregisterenhet',
     require: ['Ext.data.*',
               'Ext.form.*'],
+    emptyText: 'Sök fastighet...',
+    selectOnFocus: true,
+    minChars: 3,
+    displayField: 'name',
+    valueField: 'id',
+    labelWidth: 60,
+    queryParam: 'q',
     queryDelay: 800,
+    typeAhead: true,
+    forceSelection: true,
+    msgTarget: 'under',
+    store: new Ext.data.Store({
+        proxy: {
+            type: 'ajax',
+            url : OpenEMap.basePathLM + 'registerenheter',
+            extraParams: {
+                lmuser: OpenEMap.lmUser
+            },
+            reader: {
+                type: 'json',
+                root: 'features'
+            }
+        },
+        fields: [
+             {name: 'id', mapping: 'properties.objid'},
+             {name: 'name', mapping: 'properties.name'}
+         ]
+    }),
     initComponent : function() {
         var registeromrade;
         var zoom;
@@ -3121,56 +3150,64 @@ Ext.define('OpenEMap.form.SearchRegisterenhet', {
             });
         }
         
-        this.store = Ext.create('Ext.data.Store', {
-            proxy: {
-                type: 'ajax',
-                url : OpenEMap.basePathLM + 'registerenheter',
-                extraParams: {
-                    lmuser: OpenEMap.lmUser
-                },
-                reader: {
-                    type: 'json',
-                    root: 'features'
-                }
-            },
-            fields: [
-                 {name: 'id', mapping: 'properties.objid'},
-                 {name: 'name', mapping: 'properties.name'}
-             ]
-        });
-        
         this.store.on('beforeload', function(store, operation) {
           store.lastOperation = operation;
         }, this);
         
-        this.labelWidth = 60;
-        this.displayField = 'name';
-        this.valueField = 'id';
-        this.queryParam = 'q';
-        this.typeAhead = true;
-        this.forceSelection = true;
         
+        this.store.on('load', function(store, records, successful, eOpts) {
+         		if (successful) {
+         			if (store.count() === 0) { 
+         				this.setActiveError('Sökningen gav inga träffar');
+         				this.doComponentLayout();
+         			}
+         		} else {
+         			this.setActiveError('Söktjänsten fungerar inte');
+       				this.doComponentLayout();
+         		}
+         	}, 
+         	this 
+     	);
+
+	    this.clearSearchString = function(e,el,panel) {
+	    	if (typeof panel === "undefined") {
+	    		panel = this;
+	    	}
+		    panel.clearValue();
+		    panel.collapse();
+			layer.destroyFeatures();
+			panel.focus();
+	    };
+
         this.listeners = {
             'select':  function(combo, records) {
                 var id = records[0].get('id');
                 doSearch.call(this, id);
             },
             'beforequery': function(queryPlan) {
-                if (registeromrade && queryPlan.query.match(registeromrade) === null) {
-                    queryPlan.query = registeromrade + ' ' + queryPlan.query;
-                }
-                var lastQ = this.store.lastOperation && this.store.lastOperation.request && this.store.lastOperation.request.params && this.store.lastOperation.request.params.q ? this.store.lastOperation.request.params.q : undefined;
-		        if (this.store.loading && this.store.lastOperation) {
-		          var requests = Ext.Ajax.requests;
-		          for (var id in requests)
-		            if (requests.hasOwnProperty(id) && requests[id].options == this.store.lastOperation.request) {
-		              Ext.Ajax.abort(requests[id]);
-		            }
-		        }
+            	if (queryPlan.query.length < this.minChars) {
+            		queryPlan.cancel = true;
+            	} else {
+	                if (registeromrade && queryPlan.query.match(registeromrade) === null) {
+	                    queryPlan.query = registeromrade + ' ' + queryPlan.query;
+	                }
+	                var lastQ = this.store.lastOperation && this.store.lastOperation.request && this.store.lastOperation.request.params && this.store.lastOperation.request.params.q ? this.store.lastOperation.request.params.q : undefined;
+			        if (this.store.loading && this.store.lastOperation) {
+			          var requests = Ext.Ajax.requests;
+			          for (var id in requests)
+			            if (requests.hasOwnProperty(id) && requests[id].options == this.store.lastOperation.request) {
+			              Ext.Ajax.abort(requests[id]);
+			            }
+			        }
+				}
             },
             scope: this
         };
         
+        // Drop down arrow replaced by reset button 
+	    this.trigger1Cls = 'x-form-clear-trigger';
+	    this.onTrigger1Click = this.clearSearchString;
+	    
         this.callParent(arguments);
     }
 });
@@ -3199,6 +3236,16 @@ Ext.define('OpenEMap.form.SearchAddress', {
     alias: 'widget.searchaddress',
     require: ['Ext.data.*',
               'Ext.form.*'],
+    emptyText: 'Sök adress...',
+    selectOnFocus: true,
+    minChars: 3,
+    labelWidth: 60,
+    displayField: 'name',
+    valueField: 'id',
+    queryParam: 'q',
+    typeAhead: true,
+    forceSelection: true,
+    msgTarget: 'under',
     initComponent : function() {
         var registeromrade;
         var zoom = 5;
@@ -3255,32 +3302,58 @@ Ext.define('OpenEMap.form.SearchAddress', {
           store.lastOperation = operation;
         }, this);
         
-        this.labelWidth = 60;
-        this.displayField = 'name';
-        this.valueField = 'id';
-        this.queryParam ='q';
-        this.typeAhead = true;
-        this.forceSelection = true;
-        
+        this.store.on('load', function(store, records, successful, eOpts) {
+         		if (successful) {
+         			if (store.count() === 0) { 
+         				this.setActiveError('Sökningen gav inga träffar');
+         				this.doComponentLayout();
+         			}
+         		} else {
+         			this.setActiveError('Söktjänsten fungerar inte');
+       				this.doComponentLayout();
+         		}
+         	}, 
+         	this 
+     	);
+
+	    this.clearSearchString = function(e,el,panel) {
+	    	if (typeof panel === "undefined") {
+	    		panel = this;
+	    	}
+	    	
+		    panel.clearValue();
+		    panel.collapse();
+			layer.destroyFeatures();
+			panel.focus();
+	    };
+
         this.listeners = {
             'select':  function(combo, records) {
                 doSearch.call(this, records[0].data.fnr, records[0].data.x, records[0].data.y);
             },
             'beforequery': function(queryPlan) {
-                if (registeromrade && queryPlan.query.match(registeromrade) === null) {
-                    queryPlan.query = registeromrade + ' ' + queryPlan.query;
-                }
-
-		        if (this.store.loading && this.store.lastOperation) {
-		          var requests = Ext.Ajax.requests;
-		          for (var id in requests)
-		            if (requests.hasOwnProperty(id) && requests[id].options == this.store.lastOperation.request) {
-		              Ext.Ajax.abort(requests[id]);
-		            }
-		        }
+            	if (queryPlan.query.length < this.minChars) {
+            		queryPlan.cancel = true;
+            	} else {
+	                if (registeromrade && queryPlan.query.match(registeromrade) === null) {
+	                    queryPlan.query = registeromrade + ' ' + queryPlan.query;
+	                }
+	
+			        if (this.store.loading && this.store.lastOperation) {
+			          var requests = Ext.Ajax.requests;
+			          for (var id in requests)
+			            if (requests.hasOwnProperty(id) && requests[id].options == this.store.lastOperation.request) {
+			              Ext.Ajax.abort(requests[id]);
+			            }
+			        }
+			    }
             },
             scope: this
         };
+
+        // Drop down arrow replaced by reset button 
+	    this.trigger1Cls = 'x-form-clear-trigger';
+	    this.onTrigger1Click = this.clearSearchString;
         
         this.callParent(arguments);
     }
@@ -3310,6 +3383,16 @@ Ext.define('OpenEMap.form.SearchPlacename', {
     alias: 'widget.searchplacename',
     require: ['Ext.data.*',
               'Ext.form.*'],
+    emptyText: 'Sök ort...',
+    selectOnFocus: true,
+    minChars: 3,
+    labelWidth: 60,
+    displayField: 'name',
+    valueField: 'id',
+    queryParam: 'q',
+    typeAhead: true,
+    forceSelection: true,
+    msgTarget: 'under',
     initComponent : function() {
         var kommunkod;
         var zoom = 5;
@@ -3341,13 +3424,30 @@ Ext.define('OpenEMap.form.SearchPlacename', {
           store.lastOperation = operation;
         }, this);
         
-        this.labelWidth= 60;
-        this.displayField= 'name';
-        this.valueField= 'id';
-        this.queryParam='q';
-        this.typeAhead= true;
-        this.forceSelection= true;
-        
+        this.store.on('load', function(store, records, successful, eOpts) {
+         		if (successful) {
+         			if (store.count() === 0) { 
+         				this.setActiveError('Sökningen gav inga träffar');
+         				this.doComponentLayout();
+         			}
+         		} else {
+         			this.setActiveError('Söktjänsten fungerar inte');
+       				this.doComponentLayout();
+         		}
+         	}, 
+         	this 
+     	);
+
+	    this.clearSearchString = function(e,el,panel) {
+	    	if (typeof panel === "undefined") {
+	    		panel = this;
+	    	}
+		    panel.clearValue();
+		    panel.collapse();
+			layer.destroyFeatures();
+			panel.focus();
+	    };
+
         this.listeners = {
             'select':  function(combo, records) {
                 var fake = records[0].raw;
@@ -3355,18 +3455,27 @@ Ext.define('OpenEMap.form.SearchPlacename', {
                 var switchedAxis = [coords[1], coords[0]];
                 this.mapPanel.map.setCenter(switchedAxis, zoom);
             },
-            'beforequery': function() {
-		        if (this.store.loading && this.store.lastOperation) {
-		          var requests = Ext.Ajax.requests;
-		          for (var id in requests)
-		            if (requests.hasOwnProperty(id) && requests[id].options == this.store.lastOperation.request) {
-		              Ext.Ajax.abort(requests[id]);
-		            }
-		        }
+            'beforequery': function(queryPlan) {
+            	this.minChars = typeof this.minChars !== 'undefined' ? this.minChars : 0; 
+            	if (queryPlan.query.length < this.minChars) {
+            		queryPlan.cancel = true;
+            	} else {
+			        if (this.store.loading && this.store.lastOperation) {
+			          var requests = Ext.Ajax.requests;
+			          for (var id in requests)
+			            if (requests.hasOwnProperty(id) && requests[id].options == this.store.lastOperation.request) {
+			              Ext.Ajax.abort(requests[id]);
+			            }
+			        }
+			    }
 		    },
             scope: this
         };
         
+        // Drop down arrow replaced by reset button 
+	    this.trigger1Cls = 'x-form-clear-trigger';
+	    this.onTrigger1Click = this.clearSearchString;
+
         this.callParent(arguments);
     }
 });
@@ -3396,6 +3505,17 @@ Ext.define('OpenEMap.form.SearchES', {
     alias: 'widget.searches',
     require: ['Ext.data.*',
               'Ext.form.*'],
+    emptyText: 'Sök detaljplan...',
+    selectOnFocus: true,
+    minChars: 1,
+    labelWidth: 60,
+    displayField: 'hit',
+    valueField: 'id',
+    queryParam: 'q',
+    typeAhead: true,
+    forceSelection: true,
+    msgTarget: 'under',
+    
     initComponent : function() {
         var map = this.mapPanel.map;
         var layer = this.mapPanel.searchLayer;
@@ -3418,18 +3538,30 @@ Ext.define('OpenEMap.form.SearchES', {
             ]
         });
         
-        this.displayField = 'hit';
-        this.valueField = 'id';
-        this.queryParam ='q';
-        this.typeAhead = true;
-        this.forceSelection = true;
-        this.allowBlank = false;
-        this.allowOnlyWhitespace = false;
-        this.minChars = 4;
-        this.minLength = 4;
-        this.preventMark = true;
-        this.hideTrigger = true;
-        
+        this.store.on('load', function(store, records, successful, eOpts) {
+         		if (successful) {
+         			if (store.count() === 0) { 
+         				this.setActiveError('Sökningen gav inga träffar');
+         				this.doComponentLayout();
+         			}
+         		} else {
+         			this.setActiveError('Söktjänsten fungerar inte');
+       				this.doComponentLayout();
+         		}
+         	}, 
+         	this 
+     	);
+
+	    this.clearSearchString = function(e,el,panel) {
+	    	if (typeof panel === "undefined") {
+	    		panel = this;
+	    	}
+		    panel.clearValue();
+		    panel.collapse();
+			layer.destroyFeatures();
+			panel.focus();
+	    };
+
         this.listeners = {
             'select':  function(combo, records) {
                 var geojson = records[0].data.geometry;
@@ -3443,11 +3575,19 @@ Ext.define('OpenEMap.form.SearchES', {
                 map.zoomToExtent(feature.geometry.getBounds());
             },
             'beforequery': function(queryPlan) {
-                queryPlan.query = '"' + queryPlan.query + '"' + '*';
+            	if (queryPlan.query.length < this.minChars) {
+            		queryPlan.cancel = true;
+            	} else {
+	                queryPlan.query = '"' + queryPlan.query + '"' + '*';
+	            }
             },
             scope: this
         };
         
+        // Drop down arrow replaced by reset button 
+	    this.trigger1Cls = 'x-form-clear-trigger';
+	    this.onTrigger1Click = this.clearSearchString;
+
         this.callParent(arguments);
     }
 });
@@ -3482,6 +3622,7 @@ Ext.define('OpenEMap.view.SearchFastighet', {
                                                 
                                             
     border: false,
+    draggable: false,
     initComponent : function() {
 
         if (!this.renderTo) {
@@ -3489,18 +3630,24 @@ Ext.define('OpenEMap.view.SearchFastighet', {
             this.bodyPadding = 5;
         }
         
+        var selectedValue = '';
         var data = [];
+        
         if (this.search && this.search.searchEstates) {
 			data.push(['searchregisterenhet', 'Fastighet' ]);
+			selectedValue = "searchregisterenhet";
 		}
         if (this.search && this.search.searchAddresses) {
 			data.push(['searchaddress', 'Adress']);
+			selectedValue = selectedValue === "" ? "searchaddress" : selectedValue;
 		}
         if (this.search && this.search.searchPlacenames) {
 			data.push(['searchplacename', 'Ort']);
+			selectedValue = selectedValue === "" ? "searchplacename" : selectedValue;
 		}
 		if (this.search && this.search.searchES && this.search.searchES.detaljplan) {
 			data.push(['searches', 'Detaljplaner']);
+			selectedValue = selectedValue === "" ? "searches" : selectedValue;
 		}
 //        data.push(['searchbyggnad', 'Byggnad']);
 
@@ -3578,7 +3725,7 @@ Ext.define('OpenEMap.view.SearchFastighet', {
                 store : data,
                 forceSelection : true,
                 queryMode : 'local',
-                value : 'searchregisterenhet',
+                value : selectedValue,
                 border: false,
                 listeners : {
                     change : onChange,
@@ -3589,12 +3736,12 @@ Ext.define('OpenEMap.view.SearchFastighet', {
                 columnWidth : 1,
                 layout : 'fit',
                 border: false,
-                items : defSearchCombo.call(this,'searchregisterenhet')
-            } ]    }
-        ];
+                items : defSearchCombo.call(this,selectedValue)
+            } ]    
+        } ];
         
         //if (!this.renderTo) {
-            this.items.push(grid);
+        this.items.push(grid);
         //}
 
         this.callParent(arguments);
@@ -4008,6 +4155,25 @@ Ext.define('OpenEMap.data.GroupedLayerTree' ,{
             var isFromAdd = node.getOwnerTree() instanceof OpenEMap.view.layer.Add;
            
             if (!isFromAdd) {
+            	if (node.get('layer') !== '') {
+		        	node.get('layer').events.register('loadstart', node, function(evt) {
+		        		this.set('cls', 'oep-layerloading');
+		        		this.set('loadstatus', 'loading');
+	        			this.set('qtip', '');
+		    		});
+		        	node.get('layer').events.register('loadend', node, function(evt) {
+		        		if (this.get('loadstatus') === 'loading') { 
+		        			this.set('loadstatus', 'loaded');
+			        		this.set('cls', '');
+			        	}
+		    		});
+		        	node.get('layer').events.register('tileerror', node, function(evt) {
+		        		this.set('cls', 'oep-layererror');
+	        			this.set('loadstatus', 'error');
+	        			this.set('qtip', 'Fel när lagret skulle ritas upp.');
+		    		});
+	    		}
+
                 // use from add internal checked status
                 if (node.raw.checked_) {
                     node.set('checked', node.raw.checked_);
@@ -4131,10 +4297,13 @@ Ext.define('OpenEMap.view.layer.Tree' ,{
                                          
                             
       
-
-    rootVisible: false,
+    rootVisible: true,
     hideHeaders: true,
-
+	listeners: {
+		afterrender: function() {
+	    	this.gui.fireEvent('layerControlLoaded', this);
+		}
+	},
     initComponent: function() {
         if(!this.store && this.mapPanel) {
             this.store = Ext.create('OpenEMap.data.GroupedLayerTree', {
@@ -5519,15 +5688,10 @@ Ext.define('OpenEMap.view.layer.Advanced' ,{
 Ext.define('OpenEMap.view.layer.Basic' ,{
     extend:  OpenEMap.view.layer.Tree ,
 
-    rootVisible: false,
+	rootVisible: false,
     width: 300,
 	resizable: true,
 	resizeHandles: 's',
-	listeners: {
-		afterrender: function() {
-	    	this.gui.fireEvent('layerControlLoaded', this);
-		}
-	},
 
     initComponent: function() {
     	this.setLoading(true);
@@ -6233,9 +6397,9 @@ Ext.define('OpenEMap.config.Parser', {
             "fallThrough" : true,
             "controls": ["Navigation", "KeyboardDefaults"],
             "projection": "EPSG:3006",
-            "resolutions": [280, 140, 70, 28, 14, 7, 4.2, 2.8, 1.4, 0.56, 0.28, 0.14, 0.112],
+            "resolutions": [560, 280, 140, 70, 28, 14, 7, 4.2, 2.8, 1.4, 0.56, 0.28, 0.14, 0.112, 0.056],
             "extent": [608114, 6910996, 641846, 6932596],
-            "maxExtent": [487000.0, 6887000.0, 749144.0, 7149144.0],
+            "maxExtent": [487000.0, 6855000.0, 749144.0, 7149144.0],
             "units": "m",
             "municipalities": ['Sundvsall', 'Timrå', 'Kramfors', 'Örnsköldsvik', 'Härnösand']
         };
@@ -8448,7 +8612,7 @@ Ext.define('OpenEMap.Client', {
                                             
                                                            
                                                              
-    version: '1.6.2',
+    version: '1.6.3',
     /**
      * OpenLayers Map instance
      * 
