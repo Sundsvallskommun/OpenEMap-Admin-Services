@@ -32,8 +32,10 @@ import javax.sql.DataSource;
 
 import org.oemap.services.beans.Config;
 import org.oemap.services.bl.OpenEmapBeanFactory;
+import org.oemap.services.exceptions.InvalidConfigIdException;
 import org.oemap.services.exceptions.InvalidUserException;
 import org.oemap.services.exceptions.WriteprotectedException;
+import org.oemap.services.exceptions.ConsistencyException;
 import org.oemap.services.modules.responsehandler.StringResponseHandler;
 
 import se.unlogic.hierarchy.core.annotations.WebPublic;
@@ -182,12 +184,16 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 			HttpServletResponse res, User user, URIParser uriParser,
 			@URIParam(name = "id") Integer id) throws Throwable {
 		Config config = configDAO.get(id);
-		Boolean isPublic = config.getIsPublic();
-		
-		if (isPublic == null){
-			return "";
+		if (config == null) {
+			throw new InvalidConfigIdException("Invalid config id: " + id);
 		}
-		else if (!isPublic){
+
+		Boolean isPublic = config.getIsPublic();
+		if (isPublic == null){
+			config.setIsPublic(false);
+			isPublic = false;
+		}
+		if (!isPublic){
 			String currentUser = user.getUsername();
 			String configUser = config.getUsername();
 			if (!currentUser.equalsIgnoreCase(configUser)){
@@ -216,10 +222,16 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
 		try {
 			Config config = configFactory.createBean(Config.class, req);
-			config.setUsername(user.getUsername());
-			if (isWriteProtected(config, user)) {
-				throw new WriteprotectedException();
+			if (config == null) {
+				throw new InvalidConfigIdException("Invalid config id: " + id);
 			}
+			// Checks the consistency between config, logged in user and config id in module call
+			checkConsistency(config, user, id);
+			
+			config.setUsername(user.getUsername());
+			// Checks whether the config is write protected
+			checkWriteProtection(config, user, id);
+			
 			configDAO.update(config);
 			String json = configFactory.createJSON(config);
 			configFactory.setRestResponseObject(true, config.getConfigId(), "", json);
@@ -245,15 +257,19 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 			throws Throwable {
 		OpenEmapBeanFactory<Config> configFactory = new OpenEmapBeanFactory<Config>();
 		Config config = configFactory.createBean(Config.class, req);
+
+		// Checks the consistency between config and logged in user 
+		checkConsistency(config, user);
+		
 		try {
 			if (config.getConfigId() != null)
 				config.setConfigId(null);
 
 			config.setUsername(user.getUsername());
 
-			if (isWriteProtected(config, user)) {
-				throw new WriteprotectedException();
-			}
+			// Checks whether the config is write protected
+			checkWriteProtection(config, user);
+
 			configDAO.add(config);
 			String json = configFactory.createJSON(config);
 			configFactory.setRestResponseObject(true, config.getConfigId(), "", json);
@@ -283,9 +299,16 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 			// see if user owns config
 			// only administrators can delete public configs
 			Config config = configDAO.get(id);
-			if (isWriteProtected(config, user)) {
-				throw new WriteprotectedException();
+			if (config == null) {
+				throw new InvalidConfigIdException("Invalid config id: " + id);
 			}
+			
+			// Checks the consistency between config, logged in user and config id in module call
+			checkConsistency(config, user, id);
+			
+			// Checks whether the config is write protected
+			checkWriteProtection(config, user, id);
+
 			configDAO.delete(config);
 			String json = configFactory.createJSON(config);
 			configFactory.setRestResponseObject(true, config.getConfigId(), "", json);
@@ -297,28 +320,77 @@ public class AdminConfigModule extends AnnotatedRESTModule {
 
 	/**
 	 * 
-	 * Returns if configuration is write protected. The "default" configuration is per default write protected.
+	 * Throws an exception if configuration is write protected. The "default" configuration is per default write protected.
+	 * Use this method if the call does not contain a id (like POST)
 	 * 
-	 * @param config
-	 * @return
+	 * @param config configuration object 
+	 * @param user user logged in
+	 * @throws WriteprotectedException
 	 */
-	public boolean isWriteProtected(Config config, User user) {
+	public void checkWriteProtection(Config config, User user) throws WriteprotectedException {
 		// lock default config
 		if (config.getName().toLowerCase().equals("default")){
-			return true;
+			throw new WriteprotectedException("Config named 'default' is write protected.");
+		}
+
+		// If the user is not admin and the config is public. Dont allow to write.
+		if (!user.isAdmin() && config.getIsPublic()) {
+			throw new WriteprotectedException("Specified config (id=" + config.getConfigId() + ") is public, but logged in user (" + user.getUsername() + ") is not admin.");
+		}
+	}
+	
+	/**
+	 * 
+	 * Throws an exception if configuration is write protected. The "default" configuration is per default write protected.
+	 * Use this method if the call contains a id (like PUT and DELETE)
+	 * 
+	 * @param config configuration object 
+	 * @param user user logged in
+	 * @param id configid specified  
+	 * @throws InvalidConfigIdException, WriteprotectedException, SQLException
+	 */
+	public void checkWriteProtection(Config config, User user, Integer id) throws InvalidConfigIdException, WriteprotectedException, SQLException {
+		// Checks if the user in stored config is the same as the one logged in 
+		Config configInDatabase = configDAO.get(id);
+		if (configInDatabase == null) {
+			throw new InvalidConfigIdException("Invalid config id: " + id);
+		}
+		String configUserName = configInDatabase.getUsername();
+		String userName = user.getUsername();
+		if (!configUserName.equalsIgnoreCase(userName)) {
+			throw new WriteprotectedException("Logged in user (" + user.getUsername() + ") not owner of specified config: " + id);
 		}
 		
-		if (config.getIsPublic()){
-			if (user.isAdmin()){
-				return false;
-			}
-			return true;
+		checkWriteProtection(config, user);
+	}
+	/**
+	 * 
+	 * Throws exception if username and the values for this in configuration is not consistent
+	 * Use this method if the call does not contain an id (like POST)
+	 * 
+	 * @param config configuration object 
+	 * @param user user logged in
+	 * @throws ConsistencyException
+	 */
+	public void checkConsistency(Config config, User user) throws ConsistencyException {
+		if (!config.getUsername().equalsIgnoreCase(user.getUsername())) {
+			throw new ConsistencyException("Username (" + config.getUsername() + ") in config not the same as logged in user (" + user.getUsername() + ").");
 		}
-		String configUserName = config.getUsername();
-		String userName = user.getUsername();
-		if (configUserName.equalsIgnoreCase(userName) || configUserName.equalsIgnoreCase(null)){
-			return false;
+	}
+	/**
+	 * 
+	 * Throws exception if id, username and the values for this in configuration is not consistent
+	 * Use this method if the call contains an id (like PUT and DELETE)
+	 * 
+	 * @param config configuration object 
+	 * @param user user logged in
+	 * @param id configid specified  
+	 * @throws ConsistencyException
+	 */
+	public void checkConsistency(Config config, User user, Integer id) throws ConsistencyException {
+		if (!config.getConfigId().equals(id)) {
+			throw new ConsistencyException("Id in config (" + config.getConfigId() + ") not the same as in module call (" + id + ").");
 		}
-		return true;
+		checkConsistency(config, user);
 	}
 }

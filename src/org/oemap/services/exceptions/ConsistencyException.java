@@ -1,5 +1,5 @@
 /******************************************************************************
-Copyright Härnösands kommun(C) 2014  Per Fahlén
+Copyright Sundsvalls kommun(C) 2015  Anders Erlandsson
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
@@ -21,17 +21,17 @@ Copyright Härnösands kommun(C) 2014  Per Fahlén
 
 package org.oemap.services.exceptions;
 
-public class WriteprotectedException extends Exception {
+public class ConsistencyException extends Exception {
 
 	private static final long serialVersionUID = 3175351400323047123L;
 
 	private String message = null;
 
-	public WriteprotectedException() {
-		this.message = "You are trying to write to a write protected config. Choose another config id.";
+	public ConsistencyException() {
+		this.message = "Inconsitent data between module call and message body.";
 	}
 
-	public WriteprotectedException(String message) {
+	public ConsistencyException(String message) {
 		this.message = message;
 	}
 
