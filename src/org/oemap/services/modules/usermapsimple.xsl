@@ -112,7 +112,7 @@
 			    }
 		    };
 		    
-		    setTimeout(waitUntilOpenEMapIsDefined, 1000);
+		    waitUntilOpenEMapIsDefined();
     
 		</script>
 		<div id="showcoordinate" style="position: absolute; bottom: 0px; left: 10px;" ></div>
