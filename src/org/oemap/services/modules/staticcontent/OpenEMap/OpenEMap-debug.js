@@ -2333,15 +2333,15 @@ Ext.define('OpenEMap.action.Print', {
                 
                 printProvider.dpis.data.items.forEach(function(d){
                 	var validDpi = false;
-                    if (d.data.name === '56'){
+                    if (d.data.name === '72'){
                         validDpi = true;
                         d.data.name = 'Låg (' +d.data.name + ' dpi)';
                     } 
-                    else if (d.data.name === '127'){
+                    else if (d.data.name === '150'){
                         validDpi = true;
                         d.data.name = 'Medel (' +d.data.name + ' dpi)';
                     }
-                    else if (d.data.name === '254'){
+                    else if (d.data.name === '300'){
                         validDpi = true;
                         d.data.name = 'Hög (' +d.data.name + ' dpi)';
                     } 
@@ -4129,7 +4129,7 @@ Ext.define('OpenEMap.data.GroupedLayerTree' ,{
             url = legend.getLegendUrl(node.raw.wms.params.LAYERS || node.raw.wms.params.layers);
         }
         if (url && url.length > 0) {
-            node.set('text', '<div style="display:inline-block;width:20px;height:20px;margin-right:2px;overflow:hidden;"><img class="legendimg" src="' + url + '" style="height:20px;"></div>' + node.get('text')); 
+            node.set('text', '<div style="display:inline-block;width:20px;height:20px;margin-right:2px;overflow:hidden;vertical-align:middle;"><img class="legendimg" src="' + url + '" style="height:20px;"></div>' + node.get('text')); 
         }
         node.set('hasInlineLegend', true);
     },
@@ -4156,22 +4156,36 @@ Ext.define('OpenEMap.data.GroupedLayerTree' ,{
             var isFromAdd = node.getOwnerTree() instanceof OpenEMap.view.layer.Add;
            
             if (!isFromAdd) {
+
             	if (node.get('layer') !== '') {
 		        	node.get('layer').events.register('loadstart', node, function(evt) {
-		        		this.set('cls', 'oep-layerloading');
-		        		this.set('loadstatus', 'loading');
-	        			this.set('qtip', '');
+		        		if (this.get('loadstatus') !== 'loading') {
+			        		this.set('cls', 'oep-layerloading');
+			        		this.set('loadstatus', 'loading');
+		        			this.set('qtip', '');
+		        		}
+		    		});
+		        	node.get('layer').events.register('moveend', node, function(evt) {
+		        		if (this.get('loadstatus') !== 'loading') {
+			        		this.set('cls', 'oep-layerloading');
+			        		this.set('loadstatus', 'loading');
+		        			this.set('qtip', '');
+		        		}
 		    		});
 		        	node.get('layer').events.register('loadend', node, function(evt) {
-		        		if (this.get('loadstatus') === 'loading') { 
-		        			this.set('loadstatus', 'loaded');
-			        		this.set('cls', '');
-			        	}
+		        		if ((this.get('loadstatus') !== 'loaded') && (node.get('loadend') === node.get('loadstart'))) {
+			        		if (this.get('loadstatus') === 'loading') { 
+			        			this.set('loadstatus', 'loaded');
+				        		this.set('cls', '');
+				        	}
+				        }
 		    		});
 		        	node.get('layer').events.register('tileerror', node, function(evt) {
-		        		this.set('cls', 'oep-layererror');
-	        			this.set('loadstatus', 'error');
-	        			this.set('qtip', 'Fel när lagret skulle ritas upp.');
+		        		if (this.get('loadstatus') !== 'error') {
+			        		this.set('cls', 'oep-layererror');
+		        			this.set('loadstatus', 'error');
+		        			this.set('qtip', 'Fel när lagret skulle ritas upp.');
+		        		}
 		    		});
 	    		}
 
