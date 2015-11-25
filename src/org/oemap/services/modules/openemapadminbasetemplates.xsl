@@ -9,7 +9,7 @@
 		var appPath = '<xsl:value-of select="/Document/requestinfo/contextpath" />';
 		var gisServer = '<xsl:value-of select="gisServer" />';
 		var wmsServer = gisServer + '<xsl:value-of select="wmsServer" />';
-		var wmsGetCapabilities = gisServer + '<xsl:value-of select="wmsGetCapabilities" />';
+		var defaultWMSServer = gisServer + '<xsl:value-of select="wmsGetCapabilities" />';
 		var wfsServer = gisServer + '<xsl:value-of select="wfsServer" />';
 		var wmtsServer = gisServer + '<xsl:value-of select="wmtsServer" />';
 		var proxyUrl = '<xsl:value-of select="/Document/requestinfo/contextpath" />/<xsl:value-of select="adminproxy" />?url=';
