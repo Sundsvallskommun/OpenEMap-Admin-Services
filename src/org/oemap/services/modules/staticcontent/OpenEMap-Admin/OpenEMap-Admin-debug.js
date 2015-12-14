@@ -642,6 +642,7 @@ Ext.define('AdmClient.model.Layer', {
     fields : [ 
     	'layerId', 
     	{name: 'name', defaultValue: ''}, 
+    	{name: 'title', defaultValue: ''}, 
     	{name: 'wms', defaultValue: null}, 
     	'group', 
     	'metadata',
@@ -743,7 +744,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerPanel', {
 					        copy: true
 					    },
 			            store : Ext.create('AdmClient.store.WmsCapabilitiesLayerTree'),
-			            displayField: 'name'
+			            displayField: 'title'
 			        }
 				]
 			},
@@ -763,7 +764,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerPanel', {
 		                expanded: true
 		            }
 		        }),
-		        displayField: 'name',
+	            displayField: 'name',
 		        hideHeaders: false,
 		        tbar : [{
 		        	text : 'Nytt grupplager',
@@ -786,7 +787,7 @@ Ext.define('AdmClient.view.mapconfiguration.layer.LayerPanel', {
 		                tooltip: '&Auml;ndra namn',
 		                handler: function(grid, rowIndex, colIndex) {
 		                	var node = grid.getStore().getAt(rowIndex);
-		                	Ext.Msg.prompt('Name', 'Nytt lagernamn:', function(btn, text){
+		                	Ext.Msg.prompt('Namn', 'Nytt lagernamn:', function(btn, text){
     							if (btn == 'ok'){
         							node.set('name', text.trim());
         							node.store.save();
@@ -2643,7 +2644,7 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
      * @param {Ext.data.Model} data
      */
 	getLayerName: function(data) {
-    	if (data.wms && data.wms.params && (data.wms.params.LAYERS || data.wms.params.layers)) {
+		if (data.wms && data.wms.params && (data.wms.params.LAYERS || data.wms.params.layers)) {
     			return data.wms.params.LAYERS || data.wms.params.layers;
     	} else {
     		return data.name;
@@ -2656,6 +2657,7 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
 	        if (node.$className === 'GeoExt.data.WmsCapabilitiesLayerModel') {
 		    	node.set('allowDrag', true);
 	        	var layerName = this.getLayerName(node.data);
+	        	var title = node.get('title');
 	        	
     			// Add this node layers and subnodes to map. 
 //				store.cascadeBy(function(node) {
@@ -2684,7 +2686,10 @@ Ext.define('AdmClient.store.GroupedLayerTree' ,{
 		    			}
 		    	    	node.set('isGroupLayer', false);
 		    	    	node.set('clickable', false);
-		    	    	
+		    	    	if (title !== '') {
+		    	    		// Use title as name if it exists
+    						node.set('name', title);
+				    	} 
 		    	    	// Add getLayer function to support GeoExt
 		    	    	var layer = node.get('layer');
 		    	    	node.getLayer = function() {
@@ -3091,7 +3096,7 @@ Ext.define('AdmClient.controller.ConfigLayers', {
 
     onWMSServiceKeyup: function(combo, e, eOpts) {
         if(e.getKey() === e.ENTER) {
-            this.loadWMSCapabilities(combo.getValue());
+            this.loadWMSCapabilities(proxyUrl + combo.getValue());
         }
 
     },
